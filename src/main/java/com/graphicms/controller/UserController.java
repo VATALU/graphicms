@@ -2,15 +2,22 @@ package com.graphicms.controller;
 
 import com.graphicms.service.UserService;
 import com.graphicms.util.Api;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.auth.PubSecKeyOptions;
+import io.vertx.ext.auth.jwt.JWTAuth;
+import io.vertx.ext.auth.jwt.JWTAuthOptions;
+import io.vertx.ext.jwt.JWTOptions;
 import io.vertx.ext.web.RoutingContext;
 
 public class UserController {
 
-    private UserService userService;
+    private final UserService userService;
+    private final JWTAuth jwtAuth;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, JWTAuth jwtAuth) {
         this.userService = userService;
+        this.jwtAuth = jwtAuth;
     }
 
     public void login(RoutingContext routingContext) {
@@ -20,7 +27,7 @@ public class UserController {
         userService.findOneByName(name, res -> {
             if (res.succeeded()) {
                 if (password.equals(res.result().getPassword())) {
-                    Api.response(routingContext, 200);
+                    Api.response(routingContext, 200, "token", jwtAuth.generateToken(new JsonObject()));
                 } else {
                     Api.failure(routingContext, 500);
                 }

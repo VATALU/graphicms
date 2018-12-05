@@ -5,15 +5,16 @@ import com.graphicms.graphQL.dataFetcher.AsyncDataFetcher;
 import com.graphicms.model.User;
 import com.graphicms.service.UserService;
 import com.graphicms.graphQL.GraphQLPostHandler;
-import com.graphicms.util.Api;
 import graphql.*;
 import graphql.schema.*;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.auth.PubSecKeyOptions;
+import io.vertx.ext.auth.jwt.JWTAuth;
+import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CookieHandler;
 import io.vertx.ext.web.handler.SessionHandler;
@@ -39,7 +40,12 @@ public class HttpServerVerticle extends AbstractVerticle {
     public void start(Future<Void> startFuture) {
 
         UserService userService = UserService.createProxy(vertx, config().getString(MONGO_ADDRESS));
-        UserController userController = new UserController(userService);
+        JWTAuth jwtAuth = JWTAuth.create(vertx, new JWTAuthOptions()
+                .addPubSecKey(new PubSecKeyOptions()
+                        .setAlgorithm("HS256")
+                        .setPublicKey("keyboard cat")
+                        .setSymmetric(true)));
+        UserController userController = new UserController(userService, jwtAuth);
         //create server
         HttpServer server = vertx.createHttpServer();
 
@@ -48,7 +54,6 @@ public class HttpServerVerticle extends AbstractVerticle {
             String name = env.getArgument("name");
             userService.findOneByName(name, handler);
         };
-
         GraphQLObjectType user = GraphQLObjectType.newObject()
                 .name("user")
                 .field(GraphQLFieldDefinition.newFieldDefinition()
@@ -85,6 +90,7 @@ public class HttpServerVerticle extends AbstractVerticle {
         router.get("/user").handler(userController::findOneUserByName);
         router.post("/login").handler(userController::login);
         router.post("/logout").handler(userController::logout);
+
         router.post("/graphql")
                 .handler(GraphQLPostHandler.create(graphQLSchema));
 

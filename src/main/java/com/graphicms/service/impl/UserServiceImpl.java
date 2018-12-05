@@ -17,7 +17,6 @@ public class UserServiceImpl implements UserService {
     private MongoClient mongoClient;
 
     public static UserServiceImpl create(MongoClient mongoClient, Handler<AsyncResult<UserService>> resultHandler) {
-
         UserServiceImpl userService = new UserServiceImpl(mongoClient);
         resultHandler.handle(Future.succeededFuture(userService));
         return userService;
