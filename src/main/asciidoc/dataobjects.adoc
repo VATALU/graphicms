@@ -9,5 +9,6 @@
 |===
 ^|Name | Type ^| Description
 |[[name]]`name`|`String`|-
+|[[password]]`password`|`String`|-
 |===
 

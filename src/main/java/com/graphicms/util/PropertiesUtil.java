@@ -15,7 +15,7 @@ public class PropertiesUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PropertiesUtil.class);
 
-    public static Map<String,Object> getConfig(String fileName) {
+    public static Map<String,Object> getConfig(final String fileName) {
         Properties props;
         InputStream is = null;
         Map<String,Object> configs = new HashMap<>();

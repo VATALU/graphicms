@@ -39,7 +39,6 @@ import io.vertx.serviceproxy.ProxyHelper;
 import io.vertx.serviceproxy.ProxyHandler;
 import io.vertx.serviceproxy.ServiceException;
 import io.vertx.serviceproxy.ServiceExceptionMessageCodec;
-import java.util.List;
 import com.graphicms.model.User;
 import io.vertx.core.Vertx;
 import io.vertx.ext.mongo.MongoClient;
@@ -129,7 +128,7 @@ public class UserServiceVertxProxyHandler extends ProxyHandler {
                 msg.reply(new ServiceException(-1, res.cause().getMessage()));
               }
             } else {
-              msg.reply(new JsonArray(res.result().stream().map(r -> r == null ? null : r.toJson()).collect(Collectors.toList())));
+              msg.reply(res.result() == null ? null : res.result().toJson());
             }
          });
           break;

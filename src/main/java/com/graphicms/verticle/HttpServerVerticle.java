@@ -1,9 +1,11 @@
 package com.graphicms.verticle;
 
+import com.graphicms.controller.UserController;
 import com.graphicms.graphQL.dataFetcher.AsyncDataFetcher;
 import com.graphicms.model.User;
 import com.graphicms.service.UserService;
 import com.graphicms.graphQL.GraphQLPostHandler;
+import com.graphicms.util.Api;
 import graphql.*;
 import graphql.schema.*;
 import io.vertx.core.AbstractVerticle;
@@ -19,8 +21,6 @@ import io.vertx.ext.web.sstore.LocalSessionStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-
 import static graphql.schema.GraphQLArgument.newArgument;
 
 /**
@@ -33,17 +33,18 @@ public class HttpServerVerticle extends AbstractVerticle {
     private static final String SERVER_PORT = "server.port";
     private static final String MONGO_ADDRESS = "address.mongo";
 
-    private UserService userService;
+    private UserController userController;
 
     @Override
     public void start(Future<Void> startFuture) {
-        userService = UserService.createProxy(vertx, config().getString(MONGO_ADDRESS));
 
+        UserService userService = UserService.createProxy(vertx, config().getString(MONGO_ADDRESS));
+        UserController userController = new UserController(userService);
         //create server
         HttpServer server = vertx.createHttpServer();
 
         //set graphql
-        AsyncDataFetcher<List<User>> userFetcher = (env, handler) -> {
+        AsyncDataFetcher<User> userFetcher = (env, handler) -> {
             String name = env.getArgument("name");
             userService.findOneByName(name, handler);
         };
@@ -58,13 +59,16 @@ public class HttpServerVerticle extends AbstractVerticle {
                         .name("name")
                         .type(Scalars.GraphQLString)
                 )
+                .field(GraphQLFieldDefinition.newFieldDefinition()
+                        .name("password")
+                        .type(Scalars.GraphQLString))
                 .build();
 
         GraphQLObjectType query = GraphQLObjectType.newObject()
                 .name("queryType")
                 .field(GraphQLFieldDefinition.newFieldDefinition()
                         .name("user")
-                        .type(new GraphQLList(user))
+                        .type(user)
                         .argument(newArgument().name("name")
                                 .type(Scalars.GraphQLString))
                         .dataFetcher(userFetcher))
@@ -78,10 +82,13 @@ public class HttpServerVerticle extends AbstractVerticle {
         router.route().handler(CookieHandler.create());
         router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
 
-        router.get("/user").handler(this::findOneUserByName);
+        router.get("/user").handler(userController::findOneUserByName);
+        router.post("/login").handler(userController::login);
+        router.post("/logout").handler(userController::logout);
         router.post("/graphql")
                 .handler(GraphQLPostHandler.create(graphQLSchema));
-        //start server listening at 8080
+
+        //start server listening at portNumber
         int portnumber = Integer.valueOf(config().getString(SERVER_PORT, "8080"));
         server.requestHandler(router::accept).listen(portnumber, httpServerAsyncResult -> {
             if (httpServerAsyncResult.succeeded()) {
@@ -94,36 +101,4 @@ public class HttpServerVerticle extends AbstractVerticle {
         });
     }
 
-    private void findOneUserByName(RoutingContext routingContext) {
-        String name = routingContext.request().getParam("name");
-        userService.findOneByName(name, res -> {
-            if (res.succeeded()) {
-                apiResponse(routingContext, 200, "data", res.result());
-            } else {
-                apiFailure(routingContext, res.cause());
-            }
-        });
-    }
-
-    private void apiResponse(RoutingContext context, int statusCode, String jsonField, Object jsonData) {
-        context.response().setStatusCode(statusCode);
-        context.response().putHeader("Content-Type", "application/json");
-        JsonObject wrapped = new JsonObject().put("success", true);
-        if (jsonField != null && jsonData != null) {
-            wrapped.put(jsonField, jsonData);
-        }
-        context.response().end(wrapped.encode());
-    }
-
-    private void apiFailure(RoutingContext context, Throwable t) {
-        apiFailure(context, 500, t.getMessage());
-    }
-
-    private void apiFailure(RoutingContext context, int statusCode, String error) {
-        context.response().setStatusCode(statusCode);
-        context.response().putHeader("Content-Type", "application/json");
-        context.response().end(new JsonObject()
-                .put("success", false)
-                .put("error", error).encode());
-    }
 }

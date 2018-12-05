@@ -32,7 +32,6 @@ import java.util.function.Function;
 import io.vertx.serviceproxy.ProxyHelper;
 import io.vertx.serviceproxy.ServiceException;
 import io.vertx.serviceproxy.ServiceExceptionMessageCodec;
-import java.util.List;
 import com.graphicms.model.User;
 import io.vertx.core.Vertx;
 import io.vertx.ext.mongo.MongoClient;
@@ -67,7 +66,7 @@ public class UserServiceVertxEBProxy implements UserService {
   }
 
   @Override
-  public void findOneByName(String name, Handler<AsyncResult<List<User>>> resultHandler) {
+  public void findOneByName(String name, Handler<AsyncResult<User>> resultHandler) {
     if (closed) {
     resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
       return;
@@ -76,16 +75,12 @@ public class UserServiceVertxEBProxy implements UserService {
     _json.put("name", name);
     DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "findOneByName");
-    _vertx.eventBus().<JsonArray>send(_address, _json, _deliveryOptions, res -> {
+    _vertx.eventBus().<JsonObject>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
         resultHandler.handle(Future.failedFuture(res.cause()));
       } else {
-        resultHandler.handle(Future.succeededFuture(res.result().body().stream()
-            .map(o -> { if (o == null) return null;
-                        return o instanceof Map ? new User(new JsonObject((Map) o)) : new User((JsonObject) o);
-                 })
-            .collect(Collectors.toList())));
-      }
+        resultHandler.handle(Future.succeededFuture(res.result().body() == null ? null : new User(res.result().body())));
+                      }
     });
   }
 

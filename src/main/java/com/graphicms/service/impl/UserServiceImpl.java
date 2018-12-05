@@ -10,9 +10,6 @@ import io.vertx.ext.mongo.MongoClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 public class UserServiceImpl implements UserService {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(UserServiceImpl.class);
@@ -30,14 +27,11 @@ public class UserServiceImpl implements UserService {
         this.mongoClient = mongoClient;
     }
 
-    public void findOneByName(String name, Handler<AsyncResult<List<User>>> resultHandler) {
+    public void findOneByName(String name, Handler<AsyncResult<User>> resultHandler) {
         JsonObject query = new JsonObject().put("name", name);
-        mongoClient.find("User", query, res -> {
+        mongoClient.findOne("User", query, null, res -> {
             if (res.succeeded()) {
-                List<User> users = res.result().stream()
-                        .map(r -> r.mapTo(User.class))
-                        .collect(Collectors.toList());
-                resultHandler.handle(Future.succeededFuture(users));
+                resultHandler.handle(Future.succeededFuture(res.result().mapTo(User.class)));
             } else {
                 LOGGER.error("DataBase query error: {}", res.cause());
                 resultHandler.handle(Future.failedFuture(res.cause()));

@@ -9,8 +9,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.ext.mongo.MongoClient;
 
-import java.util.List;
-
 @VertxGen
 @ProxyGen
 public interface UserService {
@@ -23,5 +21,6 @@ public interface UserService {
         return new UserServiceVertxEBProxy(vertx,address);
     }
 
-    void findOneByName(String name, Handler<AsyncResult<List<User>>> resultHandler);
+    void findOneByName(String name, Handler<AsyncResult<User>> resultHandler);
+
 }
