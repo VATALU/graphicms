@@ -14,13 +14,14 @@ import io.vertx.ext.mongo.MongoClient;
 public interface UserService {
 
     static UserService create(MongoClient mongoClient, Handler<AsyncResult<UserService>> resultHandler) {
-        return UserServiceImpl.create(mongoClient,resultHandler);
+        return UserServiceImpl.create(mongoClient, resultHandler);
     }
 
     static UserService createProxy(Vertx vertx, String address) {
-        return new UserServiceVertxEBProxy(vertx,address);
+        return new UserServiceVertxEBProxy(vertx, address);
     }
 
     void findOneByName(String name, Handler<AsyncResult<User>> resultHandler);
 
+    void insert(String name, String email, String password, Handler<AsyncResult<Void>> resultHandler);
 }

@@ -9,16 +9,13 @@ import graphql.*;
 import graphql.schema.*;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.BodyHandler;
-import io.vertx.ext.web.handler.CookieHandler;
-import io.vertx.ext.web.handler.SessionHandler;
-import io.vertx.ext.web.sstore.LocalSessionStore;
+import io.vertx.ext.web.handler.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,12 +82,13 @@ public class HttpServerVerticle extends AbstractVerticle {
         Router router = Router.router(vertx);
         router.route().handler(BodyHandler.create());
         router.route().handler(CookieHandler.create());
-        router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
+        router.route().handler(CorsHandler.create("*").allowedMethod(HttpMethod.POST).allowedMethod(HttpMethod.OPTIONS).allowedHeader("Content-Type"));
+        router.route("/user/*").handler(JWTAuthHandler.create(jwtAuth));
+//        router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
 
         router.get("/user").handler(userController::findOneUserByName);
-        router.post("/login").handler(userController::login);
-        router.post("/logout").handler(userController::logout);
-
+        router.post("/api/login").handler(userController::login);
+        router.post("/api/signup").handler(userController::createOneUser);
         router.post("/graphql")
                 .handler(GraphQLPostHandler.create(graphQLSchema));
 

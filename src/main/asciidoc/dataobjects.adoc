@@ -8,6 +8,7 @@
 [frame="topbot"]
 |===
 ^|Name | Type ^| Description
+|[[email]]`email`|`String`|-
 |[[name]]`name`|`String`|-
 |[[password]]`password`|`String`|-
 |===

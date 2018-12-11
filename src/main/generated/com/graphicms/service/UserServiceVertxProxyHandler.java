@@ -133,6 +133,10 @@ public class UserServiceVertxProxyHandler extends ProxyHandler {
          });
           break;
         }
+        case "insert": {
+          service.insert((java.lang.String)json.getValue("name"), (java.lang.String)json.getValue("email"), (java.lang.String)json.getValue("password"), createHandler(msg));
+          break;
+        }
         default: {
           throw new IllegalStateException("Invalid action: " + action);
         }

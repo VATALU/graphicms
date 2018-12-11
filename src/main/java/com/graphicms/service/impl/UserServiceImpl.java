@@ -26,10 +26,11 @@ public class UserServiceImpl implements UserService {
         this.mongoClient = mongoClient;
     }
 
+    @Override
     public void findOneByName(String name, Handler<AsyncResult<User>> resultHandler) {
         JsonObject query = new JsonObject().put("name", name);
         mongoClient.findOne("User", query, null, res -> {
-            if (res.succeeded()) {
+            if (res.result() != null) {
                 resultHandler.handle(Future.succeededFuture(res.result().mapTo(User.class)));
             } else {
                 LOGGER.error("DataBase query error: {}", res.cause());
@@ -38,4 +39,15 @@ public class UserServiceImpl implements UserService {
         });
     }
 
+    @Override
+    public void insert(String name, String email, String password, Handler<AsyncResult<Void>> resultHandler) {
+        JsonObject user = new JsonObject().put("name", name).put("email", email).put("password", password);
+        mongoClient.insert("User", user, res -> {
+            if(res.succeeded()) {
+                resultHandler.handle(Future.succeededFuture());
+            } else {
+                resultHandler.handle(Future.failedFuture(res.cause()));
+            }
+        });
+    }
 }
