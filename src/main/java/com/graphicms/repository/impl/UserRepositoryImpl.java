@@ -1,7 +1,7 @@
-package com.graphicms.service.impl;
+package com.graphicms.repository.impl;
 
 import com.graphicms.model.User;
-import com.graphicms.service.UserService;
+import com.graphicms.repository.UserRepository;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -10,19 +10,13 @@ import io.vertx.ext.mongo.MongoClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class UserServiceImpl implements UserService {
+public class UserRepositoryImpl implements UserRepository {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(UserServiceImpl.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(UserRepositoryImpl.class);
 
-    private MongoClient mongoClient;
+    private final MongoClient mongoClient;
 
-    public static UserServiceImpl create(MongoClient mongoClient, Handler<AsyncResult<UserService>> resultHandler) {
-        UserServiceImpl userService = new UserServiceImpl(mongoClient);
-        resultHandler.handle(Future.succeededFuture(userService));
-        return userService;
-    }
-
-    private UserServiceImpl(MongoClient mongoClient) {
+    public UserRepositoryImpl(MongoClient mongoClient) {
         this.mongoClient = mongoClient;
     }
 
@@ -43,7 +37,7 @@ public class UserServiceImpl implements UserService {
     public void insert(String name, String email, String password, Handler<AsyncResult<Void>> resultHandler) {
         JsonObject user = new JsonObject().put("name", name).put("email", email).put("password", password);
         mongoClient.insert("User", user, res -> {
-            if(res.succeeded()) {
+            if (res.succeeded()) {
                 resultHandler.handle(Future.succeededFuture());
             } else {
                 resultHandler.handle(Future.failedFuture(res.cause()));

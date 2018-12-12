@@ -1,9 +1,11 @@
 package com.graphicms.verticle;
 
+import com.graphicms.controller.ProjectController;
 import com.graphicms.controller.UserController;
 import com.graphicms.graphQL.dataFetcher.AsyncDataFetcher;
 import com.graphicms.model.User;
-import com.graphicms.service.UserService;
+import com.graphicms.repository.ProjectRepository;
+import com.graphicms.service.MongoService;
 import com.graphicms.graphQL.GraphQLPostHandler;
 import graphql.*;
 import graphql.schema.*;
@@ -31,25 +33,25 @@ public class HttpServerVerticle extends AbstractVerticle {
     private static final String SERVER_PORT = "server.port";
     private static final String MONGO_ADDRESS = "address.mongo";
 
-    private UserController userController;
-
     @Override
     public void start(Future<Void> startFuture) {
 
-        UserService userService = UserService.createProxy(vertx, config().getString(MONGO_ADDRESS));
+        MongoService mongoService = MongoService.createProxy(vertx, config().getString(MONGO_ADDRESS));
         JWTAuth jwtAuth = JWTAuth.create(vertx, new JWTAuthOptions()
                 .addPubSecKey(new PubSecKeyOptions()
                         .setAlgorithm("HS256")
                         .setPublicKey("keyboard cat")
                         .setSymmetric(true)));
-        UserController userController = new UserController(userService, jwtAuth);
+        UserController userController = new UserController(mongoService, jwtAuth);
+        ProjectController projectController = new ProjectController(mongoService);
+
         //create server
         HttpServer server = vertx.createHttpServer();
 
         //set graphql
         AsyncDataFetcher<User> userFetcher = (env, handler) -> {
             String name = env.getArgument("name");
-            userService.findOneByName(name, handler);
+            mongoService.findUserByName(name, handler);
         };
         GraphQLObjectType user = GraphQLObjectType.newObject()
                 .name("user")
@@ -89,6 +91,7 @@ public class HttpServerVerticle extends AbstractVerticle {
         router.get("/user").handler(userController::findOneUserByName);
         router.post("/api/login").handler(userController::login);
         router.post("/api/signup").handler(userController::createOneUser);
+        router.get("/api/projects/:userId").handler(projectController::findAllProjecrsByUserId);
         router.post("/graphql")
                 .handler(GraphQLPostHandler.create(graphQLSchema));
 

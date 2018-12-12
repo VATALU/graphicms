@@ -1,22 +1,23 @@
 package com.graphicms.controller;
 
 import com.graphicms.model.User;
-import com.graphicms.service.UserService;
+import com.graphicms.service.MongoService;
 import com.graphicms.util.Api;
-import com.graphicms.util.AsyncHandler;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.web.RoutingContext;
 
+import java.util.Objects;
+
 public class UserController {
 
-    private final UserService userService;
+    private final MongoService mongoService;
     private final JWTAuth jwtAuth;
 
-    public UserController(UserService userService, JWTAuth jwtAuth) {
-        this.userService = userService;
+    public UserController(MongoService mongoService, JWTAuth jwtAuth) {
+        this.mongoService = mongoService;
         this.jwtAuth = jwtAuth;
     }
 
@@ -24,9 +25,9 @@ public class UserController {
         JsonObject body = routingContext.getBodyAsJson();
         String name = body.getString("username");
         String password = body.getString("password");
-        userService.findOneByName(name, res -> {
+        mongoService.findUserByName(name, res -> {
             if (res.succeeded()) {
-                if (password.equals(res.result().getPassword())) {
+                if (Objects.equals(password,res.result().getPassword())) {
                     Api.response(routingContext, 200, "token", jwtAuth.generateToken(new JsonObject()));
                 } else {
                     Api.failure(routingContext, 200, "Password Error");
@@ -39,7 +40,7 @@ public class UserController {
 
     public void findOneUserByName(RoutingContext routingContext) {
         String name = routingContext.request().getParam("username");
-        userService.findOneByName(name, res -> {
+        mongoService.findUserByName(name, res -> {
             if (res.succeeded()) {
                 Api.response(routingContext, 200, "data", res.result());
             } else {
@@ -57,7 +58,7 @@ public class UserController {
             if (res.succeeded()) {
                 Api.failure(routingContext, 200, "Duplicated Username");
             } else {
-                userService.insert(name, email, password, r -> {
+                mongoService.createUser(name, email, password, r -> {
                     if (r.succeeded()) {
                         Api.response(routingContext, 200, "data", r.result());
                     } else {
@@ -66,7 +67,7 @@ public class UserController {
                 });
             }
         };
-        userService.findOneByName(name, handler);
+        mongoService.findUserByName(name, handler);
 
     }
 }

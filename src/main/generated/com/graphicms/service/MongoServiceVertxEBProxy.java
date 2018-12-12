@@ -16,7 +16,6 @@
 
 package com.graphicms.service;
 
-import com.graphicms.service.UserService;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.Future;
@@ -32,70 +31,73 @@ import java.util.function.Function;
 import io.vertx.serviceproxy.ProxyHelper;
 import io.vertx.serviceproxy.ServiceException;
 import io.vertx.serviceproxy.ServiceExceptionMessageCodec;
+import io.vertx.serviceproxy.ProxyUtils;
+
+import java.util.List;
+import com.graphicms.model.Project;
 import com.graphicms.model.User;
+import com.graphicms.service.MongoService;
 import io.vertx.core.Vertx;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import com.graphicms.service.UserService;
-
 /*
   Generated Proxy code - DO NOT EDIT
   @author Roger the Robot
 */
-@SuppressWarnings({"unchecked", "rawtypes"})
-public class UserServiceVertxEBProxy implements UserService {
 
+@SuppressWarnings({"unchecked", "rawtypes"})
+public class MongoServiceVertxEBProxy implements MongoService {
   private Vertx _vertx;
   private String _address;
   private DeliveryOptions _options;
   private boolean closed;
 
-  public UserServiceVertxEBProxy(Vertx vertx, String address) {
+  public MongoServiceVertxEBProxy(Vertx vertx, String address) {
     this(vertx, address, null);
   }
 
-  public UserServiceVertxEBProxy(Vertx vertx, String address, DeliveryOptions options) {
+  public MongoServiceVertxEBProxy(Vertx vertx, String address, DeliveryOptions options) {
     this._vertx = vertx;
     this._address = address;
     this._options = options;
-    try {
-      this._vertx.eventBus().registerDefaultCodec(ServiceException.class,
-          new ServiceExceptionMessageCodec());
+    try{
+      this._vertx.eventBus().registerDefaultCodec(ServiceException.class, new ServiceExceptionMessageCodec());
     } catch (IllegalStateException ex) {}
   }
 
   @Override
-  public void findOneByName(String name, Handler<AsyncResult<User>> resultHandler) {
+  public  void findUserByName(String name, Handler<AsyncResult<User>> resultHandler){
     if (closed) {
-    resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
+      resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
       return;
     }
     JsonObject _json = new JsonObject();
     _json.put("name", name);
+
     DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
-    _deliveryOptions.addHeader("action", "findOneByName");
+    _deliveryOptions.addHeader("action", "findUserByName");
     _vertx.eventBus().<JsonObject>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
         resultHandler.handle(Future.failedFuture(res.cause()));
       } else {
         resultHandler.handle(Future.succeededFuture(res.result().body() == null ? null : new User(res.result().body())));
-                      }
+      }
     });
   }
-
   @Override
-  public void insert(String name, String email, String password, Handler<AsyncResult<Void>> resultHandler) {
+  public  void createUser(String name, String email, String password, Handler<AsyncResult<Void>> resultHandler){
     if (closed) {
-    resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
+      resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
       return;
     }
     JsonObject _json = new JsonObject();
     _json.put("name", name);
     _json.put("email", email);
     _json.put("password", password);
+
     DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
-    _deliveryOptions.addHeader("action", "insert");
+    _deliveryOptions.addHeader("action", "createUser");
     _vertx.eventBus().<Void>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
         resultHandler.handle(Future.failedFuture(res.cause()));
@@ -104,65 +106,27 @@ public class UserServiceVertxEBProxy implements UserService {
       }
     });
   }
-
-
-  private List<Character> convertToListChar(JsonArray arr) {
-    List<Character> list = new ArrayList<>();
-    for (Object obj: arr) {
-      Integer jobj = (Integer)obj;
-      list.add((char)(int)jobj);
+  @Override
+  public  void findAllProjectsByUserId(String userId, Handler<AsyncResult<List<Project>>> resultHandler){
+    if (closed) {
+      resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
+      return;
     }
-    return list;
-  }
+    JsonObject _json = new JsonObject();
+    _json.put("userId", userId);
 
-  private Set<Character> convertToSetChar(JsonArray arr) {
-    Set<Character> set = new HashSet<>();
-    for (Object obj: arr) {
-      Integer jobj = (Integer)obj;
-      set.add((char)(int)jobj);
-    }
-    return set;
-  }
-
-  private <T> Map<String, T> convertMap(Map map) {
-    if (map.isEmpty()) { 
-      return (Map<String, T>) map; 
-    } 
-     
-    Object elem = map.values().stream().findFirst().get(); 
-    if (!(elem instanceof Map) && !(elem instanceof List)) { 
-      return (Map<String, T>) map; 
-    } else { 
-      Function<Object, T> converter; 
-      if (elem instanceof List) { 
-        converter = object -> (T) new JsonArray((List) object); 
-      } else { 
-        converter = object -> (T) new JsonObject((Map) object); 
-      } 
-      return ((Map<String, T>) map).entrySet() 
-       .stream() 
-       .collect(Collectors.toMap(Map.Entry::getKey, converter::apply)); 
-    } 
-  }
-  private <T> List<T> convertList(List list) {
-    if (list.isEmpty()) { 
-          return (List<T>) list; 
-        } 
-     
-    Object elem = list.get(0); 
-    if (!(elem instanceof Map) && !(elem instanceof List)) { 
-      return (List<T>) list; 
-    } else { 
-      Function<Object, T> converter; 
-      if (elem instanceof List) { 
-        converter = object -> (T) new JsonArray((List) object); 
-      } else { 
-        converter = object -> (T) new JsonObject((Map) object); 
-      } 
-      return (List<T>) list.stream().map(converter).collect(Collectors.toList()); 
-    } 
-  }
-  private <T> Set<T> convertSet(List list) {
-    return new HashSet<T>(convertList(list));
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
+    _deliveryOptions.addHeader("action", "findAllProjectsByUserId");
+    _vertx.eventBus().<JsonArray>send(_address, _json, _deliveryOptions, res -> {
+      if (res.failed()) {
+        resultHandler.handle(Future.failedFuture(res.cause()));
+      } else {
+        resultHandler.handle(Future.succeededFuture(res.result().body().stream()
+          .map(o -> { if (o == null) return null;
+              return o instanceof Map ? new Project(new JsonObject((Map) o)) : new Project((JsonObject) o);
+            })
+          .collect(Collectors.toList())));
+      }
+    });
   }
 }

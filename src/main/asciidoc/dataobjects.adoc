@@ -1,15 +1,15 @@
 = Cheatsheets
 
-[[User]]
-== User
+[[Project]]
+== Project
 
 
-[cols=">25%,^25%,50%"]
+[cols=">25%,25%,50%"]
 [frame="topbot"]
 |===
 ^|Name | Type ^| Description
-|[[email]]`email`|`String`|-
-|[[name]]`name`|`String`|-
-|[[password]]`password`|`String`|-
+|[[description]]`@description`|`String`|-
+|[[group]]`@group`|`String`|-
+|[[name]]`@name`|`String`|-
 |===
 
