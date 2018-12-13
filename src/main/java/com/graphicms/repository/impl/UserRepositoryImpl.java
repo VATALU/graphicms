@@ -40,7 +40,7 @@ public class UserRepositoryImpl implements UserRepository {
             if (res.succeeded()) {
                 resultHandler.handle(Future.succeededFuture());
             } else {
-                resultHandler.handle(Future.failedFuture(res.cause()));
+                resultHandler.handle(Future.failedFuture("database error"));
             }
         });
     }

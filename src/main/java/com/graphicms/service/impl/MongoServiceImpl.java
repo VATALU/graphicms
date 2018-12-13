@@ -43,7 +43,13 @@ public class MongoServiceImpl implements MongoService {
 
     @Override
     public void createUser(String name, String email, String password, Handler<AsyncResult<Void>> resultHandler) {
-        userRepository.insert(name, email, password, resultHandler);
+        userRepository.findOneByName(name, res -> {
+            if (res.succeeded()) {
+                resultHandler.handle(Future.failedFuture("Username Duplicate"));
+            } else {
+                userRepository.insert(name, email, password, resultHandler);
+            }
+        });
     }
 
     @Override

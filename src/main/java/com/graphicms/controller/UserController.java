@@ -68,6 +68,5 @@ public class UserController {
             }
         };
         mongoService.findUserByName(name, handler);
-
     }
 }

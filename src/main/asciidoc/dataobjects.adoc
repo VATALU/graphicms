@@ -1,5 +1,17 @@
 = Cheatsheets
 
+[[Field]]
+== Field
+
+
+[cols=">25%,25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[name]]`@name`|`String`|-
+|[[type]]`@type`|`String`|-
+|===
+
 [[Project]]
 == Project
 
@@ -11,5 +23,33 @@
 |[[description]]`@description`|`String`|-
 |[[group]]`@group`|`String`|-
 |[[name]]`@name`|`String`|-
+|===
+
+[[Schema]]
+== Schema
+
+
+[cols=">25%,25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[description]]`@description`|`String`|-
+|[[fields]]`@fields`|`Array of link:dataobjects.html#Field[Field]`|-
+|[[graphqlType]]`@graphqlType`|`String`|-
+|[[name]]`@name`|`String`|-
+|===
+
+[[User]]
+== User
+
+
+[cols=">25%,25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[email]]`@email`|`String`|-
+|[[groups]]`@groups`|`Array of String`|-
+|[[name]]`@name`|`String`|-
+|[[password]]`@password`|`String`|-
 |===
 
