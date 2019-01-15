@@ -1,6 +1,6 @@
 package com.graphicms.controller;
 
-import com.graphicms.model.Model;
+import com.graphicms.model.PO.Model;
 import com.graphicms.service.MongoService;
 import com.graphicms.util.Api;
 import io.vertx.core.json.JsonObject;
@@ -15,7 +15,7 @@ public class ProjectController {
 
     public void findAllProjectsByUserId(RoutingContext routingContext) {
         String userId = routingContext.request().getParam("userId");
-        mongoService.findAllProjectsByUserId(userId, res -> {
+        mongoService.findAllProjectInfosByUserId(userId, res -> {
             if (res.succeeded()) {
                 Api.response(routingContext, 200, "projects", res.result());
             } else {

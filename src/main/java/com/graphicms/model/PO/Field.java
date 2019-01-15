@@ -1,4 +1,4 @@
-package com.graphicms.model;
+package com.graphicms.model.PO;
 
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;

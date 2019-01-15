@@ -1,7 +1,7 @@
 package com.graphicms.service.impl;
 
-import com.graphicms.model.Model;
-import com.graphicms.model.User;
+import com.graphicms.model.PO.Model;
+import com.graphicms.model.PO.User;
 import com.graphicms.repository.ModelRepository;
 import com.graphicms.repository.ProjectRepository;
 import com.graphicms.repository.UserRepository;
@@ -10,6 +10,7 @@ import com.graphicms.repository.impl.ProjectRepositoryImpl;
 import com.graphicms.repository.impl.UserRepositoryImpl;
 import com.graphicms.service.MongoService;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
@@ -18,8 +19,6 @@ import io.vertx.ext.mongo.MongoClient;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 public class MongoServiceImpl implements MongoService {
 
@@ -45,7 +44,7 @@ public class MongoServiceImpl implements MongoService {
     private MongoServiceImpl(MongoClient mongoClient) {
         this.userRepository = new UserRepositoryImpl(mongoClient);
         this.projectRepository = new ProjectRepositoryImpl(mongoClient);
-        this.modelRepository=new ModelRepositoryImpl(mongoClient);
+        this.modelRepository = new ModelRepositoryImpl(mongoClient);
     }
 
     @Override
@@ -70,6 +69,34 @@ public class MongoServiceImpl implements MongoService {
     }
 
     @Override
+    public void findAllProjectInfosByUserId(String userId, Handler<AsyncResult<JsonArray>> resultHandler) {
+        Future<JsonArray> projectsFuture = Future.future();
+        projectRepository.findAllProjectsByUserId(userId, projectsFuture.completer());
+        Future<JsonArray> authsFuture = Future.future();
+        userRepository.findAuthByUserId(userId, authsFuture.completer());
+        CompositeFuture.all(projectsFuture, authsFuture).setHandler(res -> {
+            if (res.succeeded()) {
+                JsonArray projects = projectsFuture.result();
+                JsonArray auths = authsFuture.result();
+                JsonArray projectInfos=new JsonArray();
+                for (int i = 0; i < projects.size(); i++) {
+                    JsonObject project = projects.getJsonObject(i);
+                    String projectId = project.getString("_id");
+                    for (int j = 0; j < auths.size(); j++) {
+                        if (auths.getJsonObject(j).getString("_id").equals(projectId)) {
+                            project.put("auth", auths.getJsonObject(j).getString("auth"));
+                            auths.remove(j);
+                            break;
+                        }
+                    }
+                    projectInfos.add(project);
+                }
+                resultHandler.handle(Future.succeededFuture(projectInfos));
+            }
+        });
+    }
+
+    @Override
     public void findModelsByProjectId(String projectId, Handler<AsyncResult<JsonArray>> resultHandler) {
         projectRepository.findModelsByProjectId(projectId, resultHandler);
     }
@@ -77,6 +104,6 @@ public class MongoServiceImpl implements MongoService {
     @Override
     public void insertModelsByProjectId(String projectId, Model model, Handler<AsyncResult<Void>> resultHandler) {
         model.set_id(new ObjectId().toHexString());
-        modelRepository.insertModelByProjectId(projectId,model,resultHandler);
+        modelRepository.insertModelByProjectId(projectId, model, resultHandler);
     }
 }

@@ -1,6 +1,6 @@
 package com.graphicms.repository.impl;
 
-import com.graphicms.model.Model;
+import com.graphicms.model.PO.Model;
 import com.graphicms.repository.ModelRepository;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;

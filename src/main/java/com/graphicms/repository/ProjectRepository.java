@@ -1,12 +1,9 @@
 package com.graphicms.repository;
 
-import com.graphicms.model.Model;
+import com.graphicms.model.PO.Model;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-
-import java.util.List;
 
 public interface ProjectRepository {
 

@@ -1,6 +1,6 @@
 package com.graphicms.controller;
 
-import com.graphicms.model.User;
+import com.graphicms.model.PO.User;
 import com.graphicms.service.MongoService;
 import com.graphicms.util.Api;
 import io.vertx.core.AsyncResult;

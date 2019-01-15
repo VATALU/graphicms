@@ -93,7 +93,7 @@ public class HttpServerVerticle extends AbstractVerticle {
 
         //start server listening at portNumber
         int portnumber = Integer.valueOf(config().getString(SERVER_PORT, "8080"));
-        server.requestHandler(router::accept).listen(portnumber, httpServerAsyncResult -> {
+        server.requestHandler(router).listen(portnumber, httpServerAsyncResult -> {
             if (httpServerAsyncResult.succeeded()) {
                 LOGGER.info("HTTP server running on port :{}", portnumber);
                 startFuture.complete();

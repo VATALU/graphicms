@@ -34,13 +34,13 @@ import io.vertx.serviceproxy.ServiceExceptionMessageCodec;
 import io.vertx.serviceproxy.ProxyUtils;
 
 import io.vertx.core.json.JsonArray;
-import com.graphicms.model.User;
 import com.graphicms.service.MongoService;
-import com.graphicms.model.Model;
+import com.graphicms.model.PO.User;
 import io.vertx.core.Vertx;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import com.graphicms.model.PO.Model;
 /*
   Generated Proxy code - DO NOT EDIT
   @author Roger the Robot
@@ -117,6 +117,25 @@ public class MongoServiceVertxEBProxy implements MongoService {
 
     DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "findAllProjectsByUserId");
+    _vertx.eventBus().<JsonArray>send(_address, _json, _deliveryOptions, res -> {
+      if (res.failed()) {
+        resultHandler.handle(Future.failedFuture(res.cause()));
+      } else {
+        resultHandler.handle(Future.succeededFuture(res.result().body()));
+      }
+    });
+  }
+  @Override
+  public  void findAllProjectInfosByUserId(String userId, Handler<AsyncResult<JsonArray>> resultHandler){
+    if (closed) {
+      resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
+      return;
+    }
+    JsonObject _json = new JsonObject();
+    _json.put("userId", userId);
+
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
+    _deliveryOptions.addHeader("action", "findAllProjectInfosByUserId");
     _vertx.eventBus().<JsonArray>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
         resultHandler.handle(Future.failedFuture(res.cause()));

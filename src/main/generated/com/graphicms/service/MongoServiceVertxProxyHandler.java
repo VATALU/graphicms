@@ -42,13 +42,13 @@ import io.vertx.serviceproxy.ServiceExceptionMessageCodec;
 import io.vertx.serviceproxy.HelperUtils;
 
 import io.vertx.core.json.JsonArray;
-import com.graphicms.model.User;
 import com.graphicms.service.MongoService;
-import com.graphicms.model.Model;
+import com.graphicms.model.PO.User;
 import io.vertx.core.Vertx;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import com.graphicms.model.PO.Model;
 /*
   Generated Proxy code - DO NOT EDIT
   @author Roger the Robot
@@ -146,6 +146,11 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
                         HelperUtils.createHandler(msg));
           break;
         }
+        case "findAllProjectInfosByUserId": {
+          service.findAllProjectInfosByUserId((java.lang.String)json.getValue("userId"),
+                        HelperUtils.createHandler(msg));
+          break;
+        }
         case "findModelsByProjectId": {
           service.findModelsByProjectId((java.lang.String)json.getValue("projectId"),
                         HelperUtils.createHandler(msg));
@@ -153,7 +158,7 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
         }
         case "insertModelsByProjectId": {
           service.insertModelsByProjectId((java.lang.String)json.getValue("projectId"),
-                        json.getJsonObject("model") == null ? null : new com.graphicms.model.Model(json.getJsonObject("model")),
+                        json.getJsonObject("model") == null ? null : new com.graphicms.model.PO.Model(json.getJsonObject("model")),
                         HelperUtils.createHandler(msg));
           break;
         }
