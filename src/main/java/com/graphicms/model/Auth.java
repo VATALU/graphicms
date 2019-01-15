@@ -4,11 +4,11 @@ import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 
 @DataObject
-public class AuthProject {
+public class Auth {
     private String _id;
     private String auth;
 
-    public AuthProject(JsonObject jsonObject) {
+    public Auth(JsonObject jsonObject) {
         this._id = jsonObject.getString("_id");
         this.auth = jsonObject.getString("auth");
     }
@@ -17,10 +17,10 @@ public class AuthProject {
         return new JsonObject().put("_id", _id).put("auth", auth);
     }
 
-    public AuthProject() {
+    public Auth() {
     }
 
-    public AuthProject(String _id, String auth) {
+    public Auth(String _id, String auth) {
         this._id = _id;
         this.auth = auth;
     }
@@ -43,7 +43,7 @@ public class AuthProject {
 
     @Override
     public String toString() {
-        return "AuthProject{" +
+        return "Auth{" +
                 "_id='" + _id + '\'' +
                 ", auth='" + auth + '\'' +
                 '}';

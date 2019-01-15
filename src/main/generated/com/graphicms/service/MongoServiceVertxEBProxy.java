@@ -33,13 +33,12 @@ import io.vertx.serviceproxy.ServiceException;
 import io.vertx.serviceproxy.ServiceExceptionMessageCodec;
 import io.vertx.serviceproxy.ProxyUtils;
 
-import java.util.List;
+import io.vertx.core.json.JsonArray;
 import com.graphicms.model.User;
 import com.graphicms.service.MongoService;
 import com.graphicms.model.Model;
 import io.vertx.core.Vertx;
 import io.vertx.ext.mongo.MongoClient;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 /*
@@ -108,7 +107,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
     });
   }
   @Override
-  public  void findAllProjectsByUserId(String userId, Handler<AsyncResult<List<JsonObject>>> resultHandler){
+  public  void findAllProjectsByUserId(String userId, Handler<AsyncResult<JsonArray>> resultHandler){
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
       return;
@@ -122,12 +121,12 @@ public class MongoServiceVertxEBProxy implements MongoService {
       if (res.failed()) {
         resultHandler.handle(Future.failedFuture(res.cause()));
       } else {
-        resultHandler.handle(Future.succeededFuture(ProxyUtils.convertList(res.result().body().getList())));
+        resultHandler.handle(Future.succeededFuture(res.result().body()));
       }
     });
   }
   @Override
-  public  void findModelsByProjectId(String projectId, Handler<AsyncResult<List<JsonObject>>> resultHandler){
+  public  void findModelsByProjectId(String projectId, Handler<AsyncResult<JsonArray>> resultHandler){
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
       return;
@@ -141,7 +140,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
       if (res.failed()) {
         resultHandler.handle(Future.failedFuture(res.cause()));
       } else {
-        resultHandler.handle(Future.succeededFuture(ProxyUtils.convertList(res.result().body().getList())));
+        resultHandler.handle(Future.succeededFuture(res.result().body()));
       }
     });
   }

@@ -12,6 +12,6 @@ public class GraphQLApplication {
         DeploymentOptions deploymentOptions = new DeploymentOptions();
         JsonObject config = new JsonObject(PropertiesUtil.getConfig("config.properties"));
         deploymentOptions.setConfig(config);
-        vertx.deployVerticle(new GraphQLVerticle(),deploymentOptions);
+        vertx.deployVerticle(new GraphQLVerticle(), deploymentOptions);
     }
 }

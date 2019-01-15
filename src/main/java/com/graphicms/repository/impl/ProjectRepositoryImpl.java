@@ -1,5 +1,6 @@
 package com.graphicms.repository.impl;
 
+import com.graphicms.model.Model;
 import com.graphicms.repository.ProjectRepository;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -9,9 +10,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class ProjectRepositoryImpl implements ProjectRepository {
 
@@ -24,7 +22,7 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     }
 
     @Override
-    public void findAllProjectsByUserId(String userId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+    public void findAllProjectsByUserId(String userId, Handler<AsyncResult<JsonArray>> resultHandler) {
         JsonArray pipeline = new JsonArray()
                 .add(new JsonObject().put("$match", new JsonObject().put("_id", userId)))
                 .add(new JsonObject().put("$lookup", new JsonObject().put("localField", "projects._id")
@@ -40,7 +38,8 @@ public class ProjectRepositoryImpl implements ProjectRepository {
                 .handler(result -> {
                     JsonArray auth = result.getJsonArray("projects");
                     JsonArray projects = result.getJsonArray("project");
-                    List<JsonObject> jsonObjects = new ArrayList<>();
+                    JsonArray jsonProjects = new JsonArray();
+                    //fetch auth to project
                     for (int i = 0; i < projects.size(); i++) {
                         JsonObject project = projects.getJsonObject(i);
                         String projectId = project.getString("_id");
@@ -51,21 +50,19 @@ public class ProjectRepositoryImpl implements ProjectRepository {
                                 break;
                             }
                         }
-                        jsonObjects.add(project);
+                        jsonProjects.add(project);
                     }
-                    System.out.println(jsonObjects);
-                    resultHandler.handle(Future.succeededFuture(jsonObjects));
+                    resultHandler.handle(Future.succeededFuture(jsonProjects));
                 });
     }
 
     @Override
-    public void findSchemaBySchemaId(String schemaId, Handler<AsyncResult<JsonObject>> resultHandler) {
-        JsonObject query = new JsonObject().put("schemas.name", new JsonObject().put("$all", new JsonArray().add(schemaId)));
-        JsonObject fields = new JsonObject().put("schemas", 1).put("_id", 0);
+    public void findModelByModelId(String modelId, Handler<AsyncResult<Model>> resultHandler) {
+        JsonObject query = new JsonObject().put("models.name", new JsonObject().put("$all", new JsonArray().add(modelId)));
+        JsonObject fields = new JsonObject().put("models", 1).put("_id", 0);
         mongoClient.findOne("Project", query, fields, res -> {
             if (res.result() != null) {
-                System.out.println(res.result());
-                resultHandler.handle(Future.succeededFuture(res.result()));
+                resultHandler.handle(Future.succeededFuture(new Model(res.result())));
             } else {
                 resultHandler.handle(Future.failedFuture(res.cause()));
             }
@@ -73,16 +70,12 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     }
 
     @Override
-    public void findModelsByProjectId(String projectsId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+    public void findModelsByProjectId(String projectsId, Handler<AsyncResult<JsonArray>> resultHandler) {
         JsonObject query = new JsonObject().put("_id", projectsId);
         JsonObject field = new JsonObject().put("_id", 0).put("models", "1");
         mongoClient.findOne("Project", query, field, res -> {
             if (res.result() != null) {
-                JsonArray jsonArray = res.result().getJsonArray("models");
-                List<JsonObject> models = new ArrayList<>();
-                for (int i = 0; i < jsonArray.size(); i++) {
-                    models.add(jsonArray.getJsonObject(i));
-                }
+                JsonArray models = res.result().getJsonArray("models");
                 resultHandler.handle(Future.succeededFuture(models));
             } else {
                 resultHandler.handle(Future.failedFuture(res.cause()));

@@ -12,6 +12,7 @@ import com.graphicms.service.MongoService;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import org.bson.types.ObjectId;
@@ -64,12 +65,12 @@ public class MongoServiceImpl implements MongoService {
     }
 
     @Override
-    public void findAllProjectsByUserId(String userId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+    public void findAllProjectsByUserId(String userId, Handler<AsyncResult<JsonArray>> resultHandler) {
         projectRepository.findAllProjectsByUserId(userId, resultHandler);
     }
 
     @Override
-    public void findModelsByProjectId(String projectId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+    public void findModelsByProjectId(String projectId, Handler<AsyncResult<JsonArray>> resultHandler) {
         projectRepository.findModelsByProjectId(projectId, resultHandler);
     }
 

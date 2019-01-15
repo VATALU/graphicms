@@ -1,7 +1,7 @@
 = Cheatsheets
 
-[[AuthProject]]
-== AuthProject
+[[Auth]]
+== Auth
 
 
 [cols=">25%,25%,50%"]
