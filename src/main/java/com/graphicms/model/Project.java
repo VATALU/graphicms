@@ -4,25 +4,18 @@ import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import java.util.List;
-
 @DataObject
 public class Project {
     private String _id;
     private String name;
     private String description;
-    private String group;
-    private List<Schema> schemas;
+    private JsonArray models;
 
     public Project(JsonObject jsonObject) {
         this._id = jsonObject.getString("_id");
         this.name = jsonObject.getString("name");
         this.description = jsonObject.getString("description");
-        this.group = jsonObject.getString("group");
-        JsonArray array = jsonObject.getJsonArray("fields");
-        for (int i = 0; i < array.size(); i++) {
-            this.schemas.add(array.getJsonObject(i).mapTo(Schema.class));
-        }
+        this.models = jsonObject.getJsonArray("fields");
     }
 
     public Project() {
@@ -34,16 +27,14 @@ public class Project {
                 .put("_id", _id)
                 .put("name", name)
                 .put("description", description)
-                .put("group", group)
-                .put("schemas", new JsonArray(schemas));
+                .put("schemas", models);
     }
 
-    public Project(String _id, String name, String description, String group, List<Schema> schemas) {
+    public Project(String _id, String name, String description, JsonArray models) {
         this._id = _id;
         this.name = name;
         this.description = description;
-        this.group = group;
-        this.schemas = schemas;
+        this.models = models;
     }
 
     public String getName() {
@@ -70,20 +61,12 @@ public class Project {
         this._id = _id;
     }
 
-    public String getGroup() {
-        return group;
+    public JsonArray getModels() {
+        return models;
     }
 
-    public void setGroup(String group) {
-        this.group = group;
-    }
-
-    public List<Schema> getSchemas() {
-        return schemas;
-    }
-
-    public void setSchemas(List<Schema> schemas) {
-        this.schemas = schemas;
+    public void setModels(JsonArray models) {
+        this.models = models;
     }
 
     @Override
@@ -92,8 +75,7 @@ public class Project {
                 "_id='" + _id + '\'' +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
-                ", group='" + group + '\'' +
-                ", schemas=" + schemas +
+                ", schemas=" + models +
                 '}';
     }
 }

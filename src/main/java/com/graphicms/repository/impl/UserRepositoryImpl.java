@@ -25,7 +25,8 @@ public class UserRepositoryImpl implements UserRepository {
         JsonObject query = new JsonObject().put("name", name);
         mongoClient.findOne("User", query, null, res -> {
             if (res.result() != null) {
-                resultHandler.handle(Future.succeededFuture(res.result().mapTo(User.class)));
+                User user = new User(res.result());
+                resultHandler.handle(Future.succeededFuture(user));
             } else {
                 LOGGER.error("DataBase query error: {}", res.cause());
                 resultHandler.handle(Future.failedFuture(res.cause()));

@@ -11,9 +11,9 @@ import java.util.concurrent.CompletableFuture;
 public interface AsyncDataFetcher<T> extends DataFetcher<CompletableFuture<T>> {
 
     default CompletableFuture<T> get(DataFetchingEnvironment environment) {
-        AsyncHandler<T> asyncResCF = new AsyncHandler<>();
-        async(environment, asyncResCF);
-        return asyncResCF;
+        AsyncHandler<T> asyncHandler = new AsyncHandler<>();
+        async(environment, asyncHandler);
+        return asyncHandler;
     }
 
     void async(DataFetchingEnvironment environment, Handler<AsyncResult<T>> handler);

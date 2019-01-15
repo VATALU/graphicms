@@ -27,8 +27,11 @@ public class UserController {
         String password = body.getString("password");
         mongoService.findUserByName(name, res -> {
             if (res.succeeded()) {
-                if (Objects.equals(password,res.result().getPassword())) {
-                    Api.response(routingContext, 200, "token", jwtAuth.generateToken(new JsonObject()));
+                User user = res.result();
+                if (Objects.equals(password, user.getPassword())) {
+                    String token = jwtAuth.generateToken(new JsonObject());
+                    JsonObject data = new JsonObject().put("token", token).put("id", user.get_id());
+                    Api.response(routingContext, 200, "data", data);
                 } else {
                     Api.failure(routingContext, 200, "Password Error");
                 }
@@ -60,7 +63,10 @@ public class UserController {
             } else {
                 mongoService.createUser(name, email, password, r -> {
                     if (r.succeeded()) {
-                        Api.response(routingContext, 200, "data", r.result());
+                        User user = res.result();
+                        String token = jwtAuth.generateToken(new JsonObject());
+                        JsonObject data = new JsonObject().put("token", token).put("id", user.get_id());
+                        Api.response(routingContext, 200, "data", data);
                     } else {
                         Api.failure(routingContext, r.cause());
                     }

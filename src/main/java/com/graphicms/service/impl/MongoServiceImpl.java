@@ -1,9 +1,11 @@
 package com.graphicms.service.impl;
 
-import com.graphicms.model.Project;
+import com.graphicms.model.Model;
 import com.graphicms.model.User;
+import com.graphicms.repository.ModelRepository;
 import com.graphicms.repository.ProjectRepository;
 import com.graphicms.repository.UserRepository;
+import com.graphicms.repository.impl.ModelRepositoryImpl;
 import com.graphicms.repository.impl.ProjectRepositoryImpl;
 import com.graphicms.repository.impl.UserRepositoryImpl;
 import com.graphicms.service.MongoService;
@@ -12,6 +14,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
+import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +27,13 @@ public class MongoServiceImpl implements MongoService {
 
     private UserRepository userRepository;
     private ProjectRepository projectRepository;
+    private ModelRepository modelRepository;
+
+    public MongoServiceImpl(UserRepository userRepository, ProjectRepository projectRepository, ModelRepository modelRepository) {
+        this.userRepository = userRepository;
+        this.projectRepository = projectRepository;
+        this.modelRepository = modelRepository;
+    }
 
     public static MongoServiceImpl create(MongoClient mongoClient, Handler<AsyncResult<MongoService>> resultHandler) {
         MongoServiceImpl userService = new MongoServiceImpl(mongoClient);
@@ -34,6 +44,7 @@ public class MongoServiceImpl implements MongoService {
     private MongoServiceImpl(MongoClient mongoClient) {
         this.userRepository = new UserRepositoryImpl(mongoClient);
         this.projectRepository = new ProjectRepositoryImpl(mongoClient);
+        this.modelRepository=new ModelRepositoryImpl(mongoClient);
     }
 
     @Override
@@ -53,7 +64,18 @@ public class MongoServiceImpl implements MongoService {
     }
 
     @Override
-    public void findAllProjectsByUserId(String userId, Handler<AsyncResult<List<Project>>> resultHandler) {
+    public void findAllProjectsByUserId(String userId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
         projectRepository.findAllProjectsByUserId(userId, resultHandler);
+    }
+
+    @Override
+    public void findModelsByProjectId(String projectId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+        projectRepository.findModelsByProjectId(projectId, resultHandler);
+    }
+
+    @Override
+    public void insertModelsByProjectId(String projectId, Model model, Handler<AsyncResult<Void>> resultHandler) {
+        model.set_id(new ObjectId().toHexString());
+        modelRepository.insertModelByProjectId(projectId,model,resultHandler);
     }
 }

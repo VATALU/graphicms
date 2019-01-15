@@ -42,11 +42,12 @@ import io.vertx.serviceproxy.ServiceExceptionMessageCodec;
 import io.vertx.serviceproxy.HelperUtils;
 
 import java.util.List;
-import com.graphicms.model.Project;
 import com.graphicms.model.User;
 import com.graphicms.service.MongoService;
+import com.graphicms.model.Model;
 import io.vertx.core.Vertx;
 import io.vertx.ext.mongo.MongoClient;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 /*
@@ -143,17 +144,18 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
         }
         case "findAllProjectsByUserId": {
           service.findAllProjectsByUserId((java.lang.String)json.getValue("userId"),
-                        res -> {
-                        if (res.failed()) {
-                          if (res.cause() instanceof ServiceException) {
-                            msg.reply(res.cause());
-                          } else {
-                            msg.reply(new ServiceException(-1, res.cause().getMessage()));
-                          }
-                        } else {
-                          msg.reply(new JsonArray(res.result().stream().map(r -> r == null ? null : r.toJson()).collect(Collectors.toList())));
-                        }
-                     });
+                        HelperUtils.createListHandler(msg));
+          break;
+        }
+        case "findModelsByProjectId": {
+          service.findModelsByProjectId((java.lang.String)json.getValue("projectId"),
+                        HelperUtils.createListHandler(msg));
+          break;
+        }
+        case "insertModelsByProjectId": {
+          service.insertModelsByProjectId((java.lang.String)json.getValue("projectId"),
+                        json.getJsonObject("model") == null ? null : new com.graphicms.model.Model(json.getJsonObject("model")),
+                        HelperUtils.createHandler(msg));
           break;
         }
         default: throw new IllegalStateException("Invalid action: " + action);

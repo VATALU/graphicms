@@ -3,7 +3,7 @@ package com.graphicms.repository;
 import com.graphicms.model.User;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.ext.mongo.MongoClient;
+import io.vertx.core.json.JsonObject;
 
 public interface UserRepository {
     void findOneByName(String name, Handler<AsyncResult<User>> resultHandler);

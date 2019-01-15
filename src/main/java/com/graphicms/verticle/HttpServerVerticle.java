@@ -2,13 +2,7 @@ package com.graphicms.verticle;
 
 import com.graphicms.controller.ProjectController;
 import com.graphicms.controller.UserController;
-import com.graphicms.graphQL.dataFetcher.AsyncDataFetcher;
-import com.graphicms.model.User;
-import com.graphicms.repository.ProjectRepository;
 import com.graphicms.service.MongoService;
-import com.graphicms.graphQL.GraphQLPostHandler;
-import graphql.*;
-import graphql.schema.*;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpMethod;
@@ -49,51 +43,53 @@ public class HttpServerVerticle extends AbstractVerticle {
         HttpServer server = vertx.createHttpServer();
 
         //set graphql
-        AsyncDataFetcher<User> userFetcher = (env, handler) -> {
-            String name = env.getArgument("name");
-            mongoService.findUserByName(name, handler);
-        };
-        GraphQLObjectType user = GraphQLObjectType.newObject()
-                .name("user")
-                .field(GraphQLFieldDefinition.newFieldDefinition()
-                        .name("_id")
-                        .type(Scalars.GraphQLString)
-                )
-                .field(GraphQLFieldDefinition.newFieldDefinition()
-                        .name("name")
-                        .type(Scalars.GraphQLString)
-                )
-                .field(GraphQLFieldDefinition.newFieldDefinition()
-                        .name("password")
-                        .type(Scalars.GraphQLString))
-                .build();
-
-        GraphQLObjectType query = GraphQLObjectType.newObject()
-                .name("queryType")
-                .field(GraphQLFieldDefinition.newFieldDefinition()
-                        .name("user")
-                        .type(user)
-                        .argument(newArgument().name("name")
-                                .type(Scalars.GraphQLString))
-                        .dataFetcher(userFetcher))
-                .build();
-
-        GraphQLSchema graphQLSchema = GraphQLSchema.newSchema().query(query).build();
+//        AsyncDataFetcher<JsonObject> userFetcher = (env, handler) -> {
+//            String name = env.getArgument("name");
+//            mongoService.findUserByName(name, handler);
+//        };
+//        GraphQLObjectType user = GraphQLObjectType.newObject()
+//                .name("user")
+//                .field(GraphQLFieldDefinition.newFieldDefinition()
+//                        .name("_id")
+//                        .type(Scalars.GraphQLString)
+//                )
+//                .field(GraphQLFieldDefinition.newFieldDefinition()
+//                        .name("name")
+//                        .type(Scalars.GraphQLString)
+//                )
+//                .field(GraphQLFieldDefinition.newFieldDefinition()
+//                        .name("password")
+//                        .type(Scalars.GraphQLString))
+//                .build();
+//
+//        GraphQLObjectType query = GraphQLObjectType.newObject()
+//                .name("queryType")
+//                .field(GraphQLFieldDefinition.newFieldDefinition()
+//                        .name("user")
+//                        .type(user)
+//                        .argument(newArgument().name("name")
+//                                .type(Scalars.GraphQLString))
+//                        .dataFetcher(userFetcher))
+//                .build();
+//
+//        GraphQLSchema graphQLSchema = GraphQLSchema.newSchema().query(query).build();
 
         //init router
         Router router = Router.router(vertx);
         router.route().handler(BodyHandler.create());
         router.route().handler(CookieHandler.create());
-        router.route().handler(CorsHandler.create("*").allowedMethod(HttpMethod.POST).allowedMethod(HttpMethod.OPTIONS).allowedHeader("Content-Type"));
+        router.route().handler(CorsHandler.create("*").allowedMethod(HttpMethod.GET).allowedMethod(HttpMethod.POST).allowedMethod(HttpMethod.OPTIONS).allowedHeader("Content-Type"));
         router.route("/user/*").handler(JWTAuthHandler.create(jwtAuth));
 //        router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
 
         router.get("/user").handler(userController::findOneUserByName);
         router.post("/api/login").handler(userController::login);
         router.post("/api/signup").handler(userController::createOneUser);
-        router.get("/api/projects/:userId").handler(projectController::findAllProjecrsByUserId);
-        router.post("/graphql")
-                .handler(GraphQLPostHandler.create(graphQLSchema));
+        router.get("/api/projects/:userId").handler(projectController::findAllProjectsByUserId);
+        router.get("/api/project/:projectId/models").handler(projectController::findModelsByProjectId);
+        router.post("/api/project/:projectId/models").handler(projectController::insertModelByProjectId);
+//        router.post("/graphql")
+//                .handler(GraphQLPostHandler.create(graphQLSchema));
 
         //start server listening at portNumber
         int portnumber = Integer.valueOf(config().getString(SERVER_PORT, "8080"));
