@@ -162,6 +162,12 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
                         HelperUtils.createHandler(msg));
           break;
         }
+        case "deleteModelByProjectIdAndModelId": {
+          service.deleteModelByProjectIdAndModelId((java.lang.String)json.getValue("projectId"),
+                        (java.lang.String)json.getValue("modelId"),
+                        HelperUtils.createHandler(msg));
+          break;
+        }
         default: throw new IllegalStateException("Invalid action: " + action);
       }
     } catch (Throwable t) {

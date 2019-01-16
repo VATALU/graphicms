@@ -39,12 +39,23 @@ public class ProjectController {
         String projectId = routingContext.request().getParam("projectId");
         JsonObject body = routingContext.getBodyAsJson();
         Model model = new Model(body);
-        System.out.println(model);
-        mongoService.insertModelsByProjectId(projectId,model,res->{
-            if(res.succeeded()) {
-                Api.response(routingContext,200);
+        mongoService.insertModelsByProjectId(projectId, model, res -> {
+            if (res.succeeded()) {
+                Api.response(routingContext, 200);
             } else {
-                Api.failure(routingContext,200,res.cause().getMessage());
+                Api.failure(routingContext, 200, res.cause().getMessage());
+            }
+        });
+    }
+
+    public void deleteModelByProjectIdAndModelId(RoutingContext routingContext) {
+        String projectId = routingContext.request().getParam("projectId");
+        String modelId = routingContext.request().getParam("modelId");
+        mongoService.deleteModelByProjectIdAndModelId(projectId, modelId, res -> {
+            if (res.succeeded()) {
+                Api.response(routingContext, 200);
+            } else {
+                Api.failure(routingContext, 200, res.cause().getMessage());
             }
         });
     }

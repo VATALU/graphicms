@@ -34,4 +34,6 @@ public interface MongoService {
     void findModelsByProjectId(String projectId, Handler<AsyncResult<JsonArray>> resultHandler);
 
     void insertModelsByProjectId(String projectId, Model model, Handler<AsyncResult<Void>> resultHandler);
+
+    void deleteModelByProjectIdAndModelId(String projectId, String modelId, Handler<AsyncResult<Void>> resultHandler);
 }

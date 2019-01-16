@@ -106,4 +106,10 @@ public class MongoServiceImpl implements MongoService {
         model.set_id(new ObjectId().toHexString());
         modelRepository.insertModelByProjectId(projectId, model, resultHandler);
     }
+
+    @Override
+    public void deleteModelByProjectIdAndModelId(String projectId, String modelId, Handler<AsyncResult<Void>> resultHandler) {
+        modelRepository.deleteModelByProjectIdAndModelId(projectId, modelId, resultHandler);
+        //TODO delete model document
+    }
 }

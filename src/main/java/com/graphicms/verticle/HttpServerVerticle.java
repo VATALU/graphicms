@@ -78,7 +78,7 @@ public class HttpServerVerticle extends AbstractVerticle {
         Router router = Router.router(vertx);
         router.route().handler(BodyHandler.create());
         router.route().handler(CookieHandler.create());
-        router.route().handler(CorsHandler.create("*").allowedMethod(HttpMethod.GET).allowedMethod(HttpMethod.POST).allowedMethod(HttpMethod.OPTIONS).allowedHeader("Content-Type"));
+        router.route().handler(CorsHandler.create("*").allowedMethod(HttpMethod.GET).allowedMethod(HttpMethod.POST).allowedMethod(HttpMethod.DELETE).allowedMethod(HttpMethod.OPTIONS).allowedHeader("Content-Type"));
         router.route("/user/*").handler(JWTAuthHandler.create(jwtAuth));
 //        router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
 
@@ -86,6 +86,7 @@ public class HttpServerVerticle extends AbstractVerticle {
         router.post("/api/login").handler(userController::login);
         router.post("/api/signup").handler(userController::createOneUser);
         router.get("/api/projects/:userId").handler(projectController::findAllProjectsByUserId);
+        router.delete("/api/project/:projectId/model/:modelId").handler(projectController::deleteModelByProjectIdAndModelId);
         router.get("/api/project/:projectId/models").handler(projectController::findModelsByProjectId);
         router.post("/api/project/:projectId/models").handler(projectController::insertModelByProjectId);
 //        router.post("/graphql")
