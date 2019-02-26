@@ -9,6 +9,7 @@ import com.graphicms.model.PO.Model;
 import com.graphicms.model.PO.Student;
 import com.graphicms.service.MongoService;
 import com.graphicms.util.Api;
+import com.graphicms.util.StringUtil;
 import graphql.Scalars;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
@@ -83,25 +84,35 @@ public class GraphqlController {
         GraphQLObjectType.Builder typeBuilder = GraphQLObjectType.newObject().name(modelName);
         fields.forEach(field -> {
             Field f = new Field((JsonObject) field);
-            typeBuilder.field(GraphQLFieldDefinition.newFieldDefinition().name(f.getName()).type(scalarsMap.get(f.getType())).build());
+            typeBuilder.field(GraphQLFieldDefinition.newFieldDefinition()
+                    //field 首字母小写
+                    .name(StringUtil.toLowerCaseFirstOne(f.getName()))
+                    .type(scalarsMap.get(f.getType())).build());
         });
         GraphQLObjectType type = typeBuilder.build();
 
         //datafetcher
         AsyncDataFetcher<Object> dataFetcher = (env, handler) -> {
             Map<String, Object> argumentsMap = env.getArguments();
-            JsonObject arguments = new JsonObject(argumentsMap);
+            Map<String, Object> upperArgumentsMap = new HashMap<>();
+            Set<Map.Entry<String, Object>> argumentsMapEntries = argumentsMap.entrySet();
+            argumentsMapEntries.forEach(argumentsMapEntry -> {
+                String key = StringUtil.toUpperCaseFirstOne(argumentsMapEntry.getKey());
+                upperArgumentsMap.put(key, argumentsMapEntry.getValue());
+            });
+
+            JsonObject arguments = new JsonObject(upperArgumentsMap);
             mongoService.qraphqlQuery(modelId, arguments, res -> {
                 if (res.succeeded()) {
                     JsonObject jsonObject = res.result();
                     HashMap<String, Class<?>> propertyMap = new HashMap<>();
                     Set<String> fieldNames = jsonObject.fieldNames();
                     fieldNames.forEach(fieldName -> {
-                        propertyMap.put(fieldName, jsonObject.getValue(fieldName).getClass());
+                        propertyMap.put(StringUtil.toLowerCaseFirstOne(fieldName), jsonObject.getValue(fieldName).getClass());
                     });
 
                     CglibBean cglibBean = new CglibBean(propertyMap);
-                    fieldNames.forEach(fieldName -> cglibBean.setValue(fieldName, jsonObject.getValue(fieldName)));
+                    fieldNames.forEach(fieldName -> cglibBean.setValue(StringUtil.toLowerCaseFirstOne(fieldName), jsonObject.getValue(fieldName)));
                     Object object = cglibBean.getObject();
                     handler.handle(Future.succeededFuture(object));
                 }
@@ -113,7 +124,7 @@ public class GraphqlController {
                 .type(type);
         fields.forEach(field -> {
             Field f = new Field((JsonObject) field);
-            fieldBuilder.argument(newArgument().name(f.getName()).type(scalarsMap.get(f.getType())).build());
+            fieldBuilder.argument(newArgument().name(StringUtil.toLowerCaseFirstOne(f.getName())).type(scalarsMap.get(f.getType())).build());
         });
         fieldBuilder.dataFetcher(dataFetcher);
         GraphQLObjectType query = GraphQLObjectType.newObject()

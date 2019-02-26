@@ -40,6 +40,7 @@ public class CollectionRepositoryImpl implements CollectionRepository {
                 System.out.println(res.result());
                 resultHandler.handle(Future.succeededFuture(res.result()));
             } else {
+                System.out.println(res.result());
                 resultHandler.handle(Future.failedFuture(res.cause()));
             }
         });
