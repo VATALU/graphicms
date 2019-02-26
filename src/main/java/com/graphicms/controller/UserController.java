@@ -52,6 +52,17 @@ public class UserController {
         });
     }
 
+    public void findOneUserByUserId(RoutingContext routingContext) {
+        String userId = routingContext.request().getParam("userId");
+        mongoService.findUserByUserId(userId, res -> {
+            if (res.succeeded()) {
+                Api.response(routingContext, 200, "data", res.result().toJson());
+            } else {
+                Api.failure(routingContext, res.cause());
+            }
+        });
+    }
+
     public void createOneUser(RoutingContext routingContext) {
         JsonObject body = routingContext.getBodyAsJson();
         String name = body.getString("username");

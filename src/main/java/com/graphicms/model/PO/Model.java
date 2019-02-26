@@ -32,12 +32,17 @@ public class Model {
     }
 
     public JsonObject toJson() {
-        return new JsonObject()
+        JsonObject model = new JsonObject()
                 .put("_id", _id)
                 .put("name", name)
                 .put("description", description)
-                .put("graphqlType", graphqlType)
-                .put("fields", fields);
+                .put("graphqlType", graphqlType);
+        if (fields != null) {
+            model.put("fields", fields);
+        } else {
+            model.put("fields",new JsonArray());
+        }
+        return model;
     }
 
     public String getName() {

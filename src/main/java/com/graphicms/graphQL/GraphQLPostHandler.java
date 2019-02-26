@@ -21,9 +21,9 @@ public class GraphQLPostHandler {
         AsyncGraphQLExec asyncGraphQLExec = AsyncGraphQLExec.create(builder);
 
         // get the body and parse
-        return rountingContext -> {
+        return routingContext -> {
             try {
-                JsonObject bodyJson = rountingContext.getBodyAsJson();
+                JsonObject bodyJson = routingContext.getBodyAsJson();
                 String query = bodyJson.getString("query");
                 JsonObject bodyVariables = bodyJson.getJsonObject("variables");
                 String operationName = bodyJson.getString("operationName");
@@ -35,10 +35,10 @@ public class GraphQLPostHandler {
                 }
 
                 // execute the graphql query
-                asyncGraphQLExec.executeQuery(query, operationName, rountingContext, variables).setHandler(queryResult -> {
+                asyncGraphQLExec.executeQuery(query, operationName, routingContext, variables).setHandler(queryResult -> {
                     if (queryResult.succeeded()) {
                         JsonObject json = queryResult.result();
-                        rountingContext.response().end(new JsonObject().put("data", json).encode());
+                        routingContext.response().end(new JsonObject().put("data", json).encode());
                     } else {
                         Map<String, Object> res = new HashMap<>();
                         res.put("data", null);
@@ -49,14 +49,14 @@ public class GraphQLPostHandler {
                             res.put("errors", queryResult.cause() != null ? Arrays.asList(queryResult.cause()) : Arrays.asList(new Exception("Internal error")));
                         }
                         JsonObject errorResult = new JsonObject(res);
-                        rountingContext.response().setStatusCode(400).end(errorResult.encode());
+                        routingContext.response().setStatusCode(400).end(errorResult.encode());
                     }
                 });
             } catch (Exception e) {
                 Map<String, Object> res = new HashMap<>();
                 res.put("errors", Arrays.asList(e));
                 JsonObject errorResult = new JsonObject(res);
-                rountingContext.response().setStatusCode(400).end(errorResult.encode());
+                routingContext.response().setStatusCode(400).end(errorResult.encode());
             }
         };
     }

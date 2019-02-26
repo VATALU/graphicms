@@ -46,6 +46,7 @@ import com.graphicms.service.MongoService;
 import com.graphicms.model.PO.User;
 import io.vertx.core.Vertx;
 import io.vertx.ext.mongo.MongoClient;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import com.graphicms.model.PO.Model;
@@ -134,6 +135,21 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
                      });
           break;
         }
+        case "findUserByUserId": {
+          service.findUserByUserId((java.lang.String)json.getValue("userId"),
+                        res -> {
+                        if (res.failed()) {
+                          if (res.cause() instanceof ServiceException) {
+                            msg.reply(res.cause());
+                          } else {
+                            msg.reply(new ServiceException(-1, res.cause().getMessage()));
+                          }
+                        } else {
+                          msg.reply(res.result() == null ? null : res.result().toJson());
+                        }
+                     });
+          break;
+        }
         case "createUser": {
           service.createUser((java.lang.String)json.getValue("name"),
                         (java.lang.String)json.getValue("email"),
@@ -156,6 +172,22 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
                         HelperUtils.createHandler(msg));
           break;
         }
+        case "findModelByProjectIdAndModelId": {
+          service.findModelByProjectIdAndModelId((java.lang.String)json.getValue("projectId"),
+                        (java.lang.String)json.getValue("modelId"),
+                        res -> {
+                        if (res.failed()) {
+                          if (res.cause() instanceof ServiceException) {
+                            msg.reply(res.cause());
+                          } else {
+                            msg.reply(new ServiceException(-1, res.cause().getMessage()));
+                          }
+                        } else {
+                          msg.reply(res.result() == null ? null : res.result().toJson());
+                        }
+                     });
+          break;
+        }
         case "insertModelsByProjectId": {
           service.insertModelsByProjectId((java.lang.String)json.getValue("projectId"),
                         json.getJsonObject("model") == null ? null : new com.graphicms.model.PO.Model(json.getJsonObject("model")),
@@ -165,6 +197,52 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
         case "deleteModelByProjectIdAndModelId": {
           service.deleteModelByProjectIdAndModelId((java.lang.String)json.getValue("projectId"),
                         (java.lang.String)json.getValue("modelId"),
+                        HelperUtils.createHandler(msg));
+          break;
+        }
+        case "createFieldByProjectIdAndModelId": {
+          service.createFieldByProjectIdAndModelId((java.lang.String)json.getValue("projectId"),
+                        (java.lang.String)json.getValue("modelId"),
+                        (io.vertx.core.json.JsonObject)json.getValue("field"),
+                        HelperUtils.createHandler(msg));
+          break;
+        }
+        case "deleteField": {
+          service.deleteField((java.lang.String)json.getValue("projectId"),
+                        (java.lang.String)json.getValue("modelId"),
+                        (java.lang.String)json.getValue("fieldName"),
+                        HelperUtils.createHandler(msg));
+          break;
+        }
+        case "findContentByModels": {
+          service.findContentByModels((java.lang.String)json.getValue("modelId"),
+                        HelperUtils.createHandler(msg));
+          break;
+        }
+        case "graphql": {
+          service.graphql((java.lang.String)json.getValue("modelId"),
+                        (java.lang.String)json.getValue("graphqlQuery"),
+                        HelperUtils.createHandler(msg));
+          break;
+        }
+        case "findModelByModelId": {
+          service.findModelByModelId((java.lang.String)json.getValue("modelId"),
+                        res -> {
+                        if (res.failed()) {
+                          if (res.cause() instanceof ServiceException) {
+                            msg.reply(res.cause());
+                          } else {
+                            msg.reply(new ServiceException(-1, res.cause().getMessage()));
+                          }
+                        } else {
+                          msg.reply(res.result() == null ? null : res.result().toJson());
+                        }
+                     });
+          break;
+        }
+        case "qraphqlQuery": {
+          service.qraphqlQuery((java.lang.String)json.getValue("collection"),
+                        (io.vertx.core.json.JsonObject)json.getValue("arguments"),
                         HelperUtils.createHandler(msg));
           break;
         }

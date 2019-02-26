@@ -1,7 +1,7 @@
 package com.graphicms;
 
 import com.graphicms.util.PropertiesUtil;
-import com.graphicms.verticle.GraphQLVerticle;
+import com.graphicms.verticle.StartVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -12,6 +12,6 @@ public class GraphQLApplication {
         DeploymentOptions deploymentOptions = new DeploymentOptions();
         JsonObject config = new JsonObject(PropertiesUtil.getConfig("config.properties"));
         deploymentOptions.setConfig(config);
-        vertx.deployVerticle(new GraphQLVerticle(), deploymentOptions);
+        vertx.deployVerticle(new StartVerticle(), deploymentOptions);
     }
 }

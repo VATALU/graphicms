@@ -1,5 +1,6 @@
 package com.graphicms.repository.impl;
 
+import com.graphicms.model.PO.Field;
 import com.graphicms.model.PO.Model;
 import com.graphicms.repository.ProjectRepository;
 import io.vertx.core.AsyncResult;
@@ -42,11 +43,12 @@ public class ProjectRepositoryImpl implements ProjectRepository {
 
     @Override
     public void findModelByModelId(String modelId, Handler<AsyncResult<Model>> resultHandler) {
-        JsonObject query = new JsonObject().put("models.name", new JsonObject().put("$all", new JsonArray().add(modelId)));
-        JsonObject fields = new JsonObject().put("models", 1).put("_id", 0);
-        mongoClient.findOne(COLLECTION, query, fields, res -> {
-            if (res.result() != null) {
-                resultHandler.handle(Future.succeededFuture(new Model(res.result())));
+        JsonObject query = new JsonObject().put("models._id", modelId);
+        JsonObject field = new JsonObject().put("models", new JsonObject().put("$elemMatch", new JsonObject().put("_id", modelId)));
+        mongoClient.findOne(COLLECTION, query, field, res -> {
+            if (res.succeeded()) {
+                Model model = new Model(res.result().getJsonArray("models").getJsonObject(0));
+                resultHandler.handle(Future.succeededFuture(model));
             } else {
                 resultHandler.handle(Future.failedFuture(res.cause()));
             }
@@ -67,5 +69,102 @@ public class ProjectRepositoryImpl implements ProjectRepository {
         });
     }
 
+
+    @Override
+    public void createModelByProjectId(String projectId, Model model, Handler<AsyncResult<Void>> resultHandler) {
+        JsonObject query = new JsonObject().put("_id", projectId);
+        JsonObject update = new JsonObject().put("$addToSet", new JsonObject().put("models", model.toJson()));
+        mongoClient.updateCollection(COLLECTION, query, update, res -> {
+            if (res.result().getDocModified() > 0) {
+                resultHandler.handle(Future.succeededFuture());
+            } else {
+                resultHandler.handle(Future.failedFuture(res.cause()));
+            }
+        });
+    }
+
+    @Override
+    public void findModelByProjectIdAndModelId(String projectId, String modelId, Handler<AsyncResult<Model>> resultHandler) {
+        JsonObject query = new JsonObject().put("_id", projectId).put("models._id", modelId);
+        JsonObject field = new JsonObject().put("models", new JsonObject().put("$elemMatch", new JsonObject().put("_id", modelId)));
+        mongoClient.findOne(COLLECTION, query, field, res -> {
+            if (res.succeeded()) {
+                Model model = new Model(res.result().getJsonArray("models").getJsonObject(0));
+                resultHandler.handle(Future.succeededFuture(model));
+            } else {
+                resultHandler.handle(Future.failedFuture(res.cause()));
+            }
+        });
+    }
+
+    @Override
+    public void updateGraphQLTypeField(String projectId, String modelId, String graphQLType, Handler<AsyncResult<Void>> resultHandler) {
+        JsonObject query = new JsonObject().put("_id", projectId).put("models._id", modelId);
+        JsonObject update = new JsonObject().put("$set", new JsonObject().put("models.$.graphqlType", graphQLType));
+        mongoClient.updateCollection(COLLECTION, query, update, res -> {
+            if (res.result().getDocModified() > 0) {
+                resultHandler.handle(Future.succeededFuture());
+            } else {
+                resultHandler.handle(Future.failedFuture(res.cause()));
+            }
+        });
+    }
+
+    @Override
+    public void findContentByModelId(String modelId, Handler<AsyncResult<JsonArray>> resultHandler) {
+        mongoClient.find(modelId, new JsonObject(), res -> {
+            if (res.result().size() > 0) {
+                JsonArray jsonArray = new JsonArray();
+                for(JsonObject jsonObject :res.result()) {
+                    jsonArray.add(jsonObject);
+                }
+                resultHandler.handle(Future.succeededFuture(jsonArray));
+            } else {
+                resultHandler.handle(Future.failedFuture(res.cause()));
+            }
+        });
+    }
+
+    @Override
+    public void createFieldByProjectIdAndModelId(String projectId, String modelId, Field field, Handler<AsyncResult<Void>> resultHandler) {
+        JsonObject query = new JsonObject().put("_id", projectId).put("models._id", modelId);
+        JsonObject update = new JsonObject().put("$addToSet", new JsonObject().put("models.$.fields", field.toJson()));
+        mongoClient.updateCollection(COLLECTION, query, update, res -> {
+            if (res.result().getDocModified() > 0) {
+                resultHandler.handle(Future.succeededFuture());
+            } else {
+                resultHandler.handle(Future.failedFuture(res.cause()));
+            }
+        });
+    }
+
+    @Override
+    public void deleteFieldByProjectIdAndModelIdAndName(String projectId, String modelId, JsonObject field, Handler<AsyncResult<Void>> resultHandler) {
+        JsonObject query = new JsonObject().put("_id", projectId).put("models._id", modelId);
+        JsonObject update = new JsonObject().put("$pull", new JsonObject().put("models.$.fields", field));
+        mongoClient.updateCollection(COLLECTION, query, update, res -> {
+            if (res.result().getDocModified() > 0) {
+                resultHandler.handle(Future.succeededFuture());
+            } else {
+                resultHandler.handle(Future.failedFuture(res.cause()));
+            }
+        });
+    }
+
+    @Override
+    public void deleteModelByProjectIdAndModelId(String projectId, String modelId, Handler<AsyncResult<Void>> resultHandler) {
+        JsonObject query = new JsonObject()
+                .put("_id", projectId);
+        JsonObject update = new JsonObject().put("$pull", new JsonObject()
+                .put("models", new JsonObject()
+                        .put("_id", modelId)));
+        mongoClient.updateCollection(COLLECTION, query, update, res -> {
+            if (res.result().getDocModified() > 0) {
+                resultHandler.handle(Future.succeededFuture());
+            } else {
+                resultHandler.handle(Future.failedFuture(res.cause()));
+            }
+        });
+    }
 
 }

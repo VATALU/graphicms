@@ -1,12 +1,20 @@
 package com.graphicms.verticle;
 
+import com.graphicms.controller.GraphqlController;
 import com.graphicms.controller.ProjectController;
 import com.graphicms.controller.UserController;
+import com.graphicms.graphQL.dataFetcher.AsyncDataFetcher;
 import com.graphicms.service.MongoService;
+import graphql.GraphQL;
+import graphql.Scalars;
+import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLSchema;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
@@ -26,11 +34,13 @@ public class HttpServerVerticle extends AbstractVerticle {
 
     private static final String SERVER_PORT = "server.port";
     private static final String MONGO_ADDRESS = "address.mongo";
+//    private static final String GRAPHQL_ADDRESS = "address.graphql";
 
     @Override
     public void start(Future<Void> startFuture) {
 
         MongoService mongoService = MongoService.createProxy(vertx, config().getString(MONGO_ADDRESS));
+//        GraphqlService graphqlService = GraphqlService.createProxy(vertx, config().getString(GRAPHQL_ADDRESS));
         JWTAuth jwtAuth = JWTAuth.create(vertx, new JWTAuthOptions()
                 .addPubSecKey(new PubSecKeyOptions()
                         .setAlgorithm("HS256")
@@ -38,6 +48,7 @@ public class HttpServerVerticle extends AbstractVerticle {
                         .setSymmetric(true)));
         UserController userController = new UserController(mongoService, jwtAuth);
         ProjectController projectController = new ProjectController(mongoService);
+        GraphqlController graphqlController = new GraphqlController(mongoService);
 
         //create server
         HttpServer server = vertx.createHttpServer();
@@ -61,7 +72,6 @@ public class HttpServerVerticle extends AbstractVerticle {
 //                        .name("password")
 //                        .type(Scalars.GraphQLString))
 //                .build();
-//
 //        GraphQLObjectType query = GraphQLObjectType.newObject()
 //                .name("queryType")
 //                .field(GraphQLFieldDefinition.newFieldDefinition()
@@ -78,18 +88,23 @@ public class HttpServerVerticle extends AbstractVerticle {
         Router router = Router.router(vertx);
         router.route().handler(BodyHandler.create());
         router.route().handler(CookieHandler.create());
-        router.route().handler(CorsHandler.create("*").allowedMethod(HttpMethod.GET).allowedMethod(HttpMethod.POST).allowedMethod(HttpMethod.DELETE).allowedMethod(HttpMethod.OPTIONS).allowedHeader("Content-Type"));
+        router.route().handler(CorsHandler.create("*").allowedMethod(HttpMethod.GET).allowedMethod(HttpMethod.POST).allowedMethod(HttpMethod.DELETE).allowedMethod(HttpMethod.PUT).allowedMethod(HttpMethod.OPTIONS).allowedHeader("Content-Type"));
         router.route("/user/*").handler(JWTAuthHandler.create(jwtAuth));
 //        router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
 
-        router.get("/user").handler(userController::findOneUserByName);
+        router.get("/api/user/:userId").handler(userController::findOneUserByUserId);
         router.post("/api/login").handler(userController::login);
         router.post("/api/signup").handler(userController::createOneUser);
         router.get("/api/projects/:userId").handler(projectController::findAllProjectsByUserId);
         router.delete("/api/project/:projectId/model/:modelId").handler(projectController::deleteModelByProjectIdAndModelId);
         router.get("/api/project/:projectId/models").handler(projectController::findModelsByProjectId);
-        router.post("/api/project/:projectId/models").handler(projectController::insertModelByProjectId);
-//        router.post("/graphql")
+        router.post("/api/project/:projectId/model").handler(projectController::insertModelByProjectId);
+        router.get("/api/project/:projectId/model/:modelId").handler(projectController::findModelByProjectIdAndModelId);
+        router.put("/api/project/:projectId/model/:modelId").handler(projectController::createField);
+        router.delete("/api/project/:projectId/model/:modelId/field/:fieldName").handler(projectController::deleteField);
+        router.get("/api/project/:projectId/model/:modelId/content").handler(projectController::findContent);
+        router.post("/api/graphql").handler(graphqlController.graphql());
+        //        router.post("/graphql")
 //                .handler(GraphQLPostHandler.create(graphQLSchema));
 
         //start server listening at portNumber

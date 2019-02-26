@@ -38,6 +38,7 @@ import com.graphicms.service.MongoService;
 import com.graphicms.model.PO.User;
 import io.vertx.core.Vertx;
 import io.vertx.ext.mongo.MongoClient;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import com.graphicms.model.PO.Model;
@@ -77,6 +78,25 @@ public class MongoServiceVertxEBProxy implements MongoService {
 
     DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "findUserByName");
+    _vertx.eventBus().<JsonObject>send(_address, _json, _deliveryOptions, res -> {
+      if (res.failed()) {
+        resultHandler.handle(Future.failedFuture(res.cause()));
+      } else {
+        resultHandler.handle(Future.succeededFuture(res.result().body() == null ? null : new User(res.result().body())));
+      }
+    });
+  }
+  @Override
+  public  void findUserByUserId(String userId, Handler<AsyncResult<User>> resultHandler){
+    if (closed) {
+      resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
+      return;
+    }
+    JsonObject _json = new JsonObject();
+    _json.put("userId", userId);
+
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
+    _deliveryOptions.addHeader("action", "findUserByUserId");
     _vertx.eventBus().<JsonObject>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
         resultHandler.handle(Future.failedFuture(res.cause()));
@@ -164,7 +184,27 @@ public class MongoServiceVertxEBProxy implements MongoService {
     });
   }
   @Override
-  public  void insertModelsByProjectId(String projectId, Model model, Handler<AsyncResult<Void>> resultHandler){
+  public  void findModelByProjectIdAndModelId(String projectId, String modelId, Handler<AsyncResult<Model>> resultHandler){
+    if (closed) {
+      resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
+      return;
+    }
+    JsonObject _json = new JsonObject();
+    _json.put("projectId", projectId);
+    _json.put("modelId", modelId);
+
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
+    _deliveryOptions.addHeader("action", "findModelByProjectIdAndModelId");
+    _vertx.eventBus().<JsonObject>send(_address, _json, _deliveryOptions, res -> {
+      if (res.failed()) {
+        resultHandler.handle(Future.failedFuture(res.cause()));
+      } else {
+        resultHandler.handle(Future.succeededFuture(res.result().body() == null ? null : new Model(res.result().body())));
+      }
+    });
+  }
+  @Override
+  public  void insertModelsByProjectId(String projectId, Model model, Handler<AsyncResult<String>> resultHandler){
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
       return;
@@ -175,7 +215,7 @@ public class MongoServiceVertxEBProxy implements MongoService {
 
     DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "insertModelsByProjectId");
-    _vertx.eventBus().<Void>send(_address, _json, _deliveryOptions, res -> {
+    _vertx.eventBus().<String>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
         resultHandler.handle(Future.failedFuture(res.cause()));
       } else {
@@ -196,6 +236,126 @@ public class MongoServiceVertxEBProxy implements MongoService {
     DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "deleteModelByProjectIdAndModelId");
     _vertx.eventBus().<Void>send(_address, _json, _deliveryOptions, res -> {
+      if (res.failed()) {
+        resultHandler.handle(Future.failedFuture(res.cause()));
+      } else {
+        resultHandler.handle(Future.succeededFuture(res.result().body()));
+      }
+    });
+  }
+  @Override
+  public  void createFieldByProjectIdAndModelId(String projectId, String modelId, JsonObject field, Handler<AsyncResult<Void>> resultHandler){
+    if (closed) {
+      resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
+      return;
+    }
+    JsonObject _json = new JsonObject();
+    _json.put("projectId", projectId);
+    _json.put("modelId", modelId);
+    _json.put("field", field);
+
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
+    _deliveryOptions.addHeader("action", "createFieldByProjectIdAndModelId");
+    _vertx.eventBus().<Void>send(_address, _json, _deliveryOptions, res -> {
+      if (res.failed()) {
+        resultHandler.handle(Future.failedFuture(res.cause()));
+      } else {
+        resultHandler.handle(Future.succeededFuture(res.result().body()));
+      }
+    });
+  }
+  @Override
+  public  void deleteField(String projectId, String modelId, String fieldName, Handler<AsyncResult<Void>> resultHandler){
+    if (closed) {
+      resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
+      return;
+    }
+    JsonObject _json = new JsonObject();
+    _json.put("projectId", projectId);
+    _json.put("modelId", modelId);
+    _json.put("fieldName", fieldName);
+
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
+    _deliveryOptions.addHeader("action", "deleteField");
+    _vertx.eventBus().<Void>send(_address, _json, _deliveryOptions, res -> {
+      if (res.failed()) {
+        resultHandler.handle(Future.failedFuture(res.cause()));
+      } else {
+        resultHandler.handle(Future.succeededFuture(res.result().body()));
+      }
+    });
+  }
+  @Override
+  public  void findContentByModels(String modelId, Handler<AsyncResult<JsonArray>> resultHandler){
+    if (closed) {
+      resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
+      return;
+    }
+    JsonObject _json = new JsonObject();
+    _json.put("modelId", modelId);
+
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
+    _deliveryOptions.addHeader("action", "findContentByModels");
+    _vertx.eventBus().<JsonArray>send(_address, _json, _deliveryOptions, res -> {
+      if (res.failed()) {
+        resultHandler.handle(Future.failedFuture(res.cause()));
+      } else {
+        resultHandler.handle(Future.succeededFuture(res.result().body()));
+      }
+    });
+  }
+  @Override
+  public  void graphql(String modelId, String graphqlQuery, Handler<AsyncResult<JsonObject>> resultHandler){
+    if (closed) {
+      resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
+      return;
+    }
+    JsonObject _json = new JsonObject();
+    _json.put("modelId", modelId);
+    _json.put("graphqlQuery", graphqlQuery);
+
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
+    _deliveryOptions.addHeader("action", "graphql");
+    _vertx.eventBus().<JsonObject>send(_address, _json, _deliveryOptions, res -> {
+      if (res.failed()) {
+        resultHandler.handle(Future.failedFuture(res.cause()));
+      } else {
+        resultHandler.handle(Future.succeededFuture(res.result().body()));
+      }
+    });
+  }
+  @Override
+  public  void findModelByModelId(String modelId, Handler<AsyncResult<Model>> resultHandler){
+    if (closed) {
+      resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
+      return;
+    }
+    JsonObject _json = new JsonObject();
+    _json.put("modelId", modelId);
+
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
+    _deliveryOptions.addHeader("action", "findModelByModelId");
+    _vertx.eventBus().<JsonObject>send(_address, _json, _deliveryOptions, res -> {
+      if (res.failed()) {
+        resultHandler.handle(Future.failedFuture(res.cause()));
+      } else {
+        resultHandler.handle(Future.succeededFuture(res.result().body() == null ? null : new Model(res.result().body())));
+      }
+    });
+  }
+  @Override
+  public  void qraphqlQuery(String collection, JsonObject arguments, Handler<AsyncResult<JsonObject>> resultHandler){
+    if (closed) {
+      resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
+      return;
+    }
+    JsonObject _json = new JsonObject();
+    _json.put("collection", collection);
+    _json.put("arguments", arguments);
+
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
+    _deliveryOptions.addHeader("action", "qraphqlQuery");
+    _vertx.eventBus().<JsonObject>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
         resultHandler.handle(Future.failedFuture(res.cause()));
       } else {

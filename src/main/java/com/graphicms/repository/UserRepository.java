@@ -11,4 +11,6 @@ public interface UserRepository {
     void insert(String name, String email, String password, Handler<AsyncResult<Void>> resultHandler);
 
     void findAuthByUserId(String userId, Handler<AsyncResult<JsonArray>> resultHandler);
+
+    void findOneByUserId(String userId, Handler<AsyncResult<User>> resultHandler);
 }

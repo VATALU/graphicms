@@ -35,13 +35,25 @@ public class ProjectController {
         });
     }
 
+    public void findModelByProjectIdAndModelId(RoutingContext routingContext) {
+        String projectId = routingContext.request().getParam("projectId");
+        String modelId = routingContext.request().getParam("modelId");
+        mongoService.findModelByProjectIdAndModelId(projectId, modelId, res -> {
+            if (res.succeeded()) {
+                Api.response(routingContext, 200, "model", res.result().toJson());
+            } else {
+                Api.failure(routingContext, 200, res.cause().getMessage());
+            }
+        });
+    }
+
     public void insertModelByProjectId(RoutingContext routingContext) {
         String projectId = routingContext.request().getParam("projectId");
         JsonObject body = routingContext.getBodyAsJson();
         Model model = new Model(body);
         mongoService.insertModelsByProjectId(projectId, model, res -> {
             if (res.succeeded()) {
-                Api.response(routingContext, 200);
+                Api.response(routingContext, 200, "_id", res.result());
             } else {
                 Api.failure(routingContext, 200, res.cause().getMessage());
             }
@@ -60,4 +72,40 @@ public class ProjectController {
         });
     }
 
+    public void createField(RoutingContext routingContext) {
+        String projectId = routingContext.request().getParam("projectId");
+        String modelId = routingContext.request().getParam("modelId");
+        JsonObject fieldJson = routingContext.getBodyAsJson();
+        mongoService.createFieldByProjectIdAndModelId(projectId, modelId, fieldJson, res -> {
+            if (res.succeeded()) {
+                Api.response(routingContext, 200);
+            } else {
+                Api.failure(routingContext, 200, res.cause().getMessage());
+            }
+        });
+    }
+
+    public void deleteField(RoutingContext routingContext) {
+        String projectId = routingContext.request().getParam("projectId");
+        String modelId = routingContext.request().getParam("modelId");
+        String fieldName = routingContext.request().getParam("fieldName");
+        mongoService.deleteField(projectId, modelId, fieldName, res -> {
+            if (res.succeeded()) {
+                Api.response(routingContext, 200);
+            } else {
+                Api.failure(routingContext, 200, res.cause().getMessage());
+            }
+        });
+    }
+
+    public void findContent(RoutingContext routingContext) {
+        String modelId = routingContext.request().getParam("modelId");
+        mongoService.findContentByModels(modelId, res -> {
+            if (res.succeeded()) {
+                Api.response(routingContext, 200, "data", res.result());
+            } else {
+                Api.failure(routingContext, 200, res.cause().getMessage());
+            }
+        });
+    }
 }

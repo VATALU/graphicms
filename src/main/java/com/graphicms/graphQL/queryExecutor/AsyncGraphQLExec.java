@@ -11,14 +11,14 @@ import io.vertx.core.json.JsonObject;
 
 public interface AsyncGraphQLExec {
 	
-	public static AsyncGraphQLExec create(GraphQL.Builder builder) {
+	static AsyncGraphQLExec create(GraphQL.Builder builder) {
 		return new AsyncGraphQLExecImpl(builder);
 	}
 	
-	public static AsyncGraphQLExec create(GraphQLSchema schema) {
+	static AsyncGraphQLExec create(GraphQLSchema schema) {
 		return new AsyncGraphQLExecImpl(GraphQL.newGraphQL(schema));
 	}
 
-	public Future<JsonObject> executeQuery(String query, String operationName, Object context, Map<String, Object> variables);
+	Future<JsonObject> executeQuery(String query, String operationName, Object context, Map<String, Object> variables);
 
 }

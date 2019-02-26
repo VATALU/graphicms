@@ -10,9 +10,9 @@ import org.slf4j.LoggerFactory;
 /**
  * start verticle
  */
-public class GraphQLVerticle extends AbstractVerticle {
+public class StartVerticle extends AbstractVerticle {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(GraphQLVerticle.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(StartVerticle.class);
 
     @Override
     public void start(Future<Void> startFuture) {
@@ -25,7 +25,13 @@ public class GraphQLVerticle extends AbstractVerticle {
             Future<String> httpVerticleFuture = Future.future();
             vertx.deployVerticle(new HttpServerVerticle(),deploymentOptions,httpVerticleFuture.completer());
             return httpVerticleFuture;
-        }).setHandler(stringAsyncResult -> {
+        })
+//                .compose(res->{
+//            Future<String> graphqlVerticleFuture = Future.future();
+//            vertx.deployVerticle(new GraphqlVerticle(),deploymentOptions,graphqlVerticleFuture.completer());
+//            return graphqlVerticleFuture;
+//        })
+                .setHandler(stringAsyncResult -> {
             if(stringAsyncResult.succeeded()) {
                 startFuture.succeeded();
             } else {

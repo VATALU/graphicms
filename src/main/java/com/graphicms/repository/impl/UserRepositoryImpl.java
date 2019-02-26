@@ -36,6 +36,19 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public void findOneByUserId(String userId, Handler<AsyncResult<User>> resultHandler) {
+        JsonObject query = new JsonObject().put("_id", userId);
+        mongoClient.findOne(COLLECTION, query, null, res -> {
+            if (res.result() != null) {
+                User user = new User(res.result());
+                resultHandler.handle(Future.succeededFuture(user));
+            } else {
+                resultHandler.handle(Future.failedFuture(res.cause()));
+            }
+        });
+    }
+
+    @Override
     public void insert(String name, String email, String password, Handler<AsyncResult<Void>> resultHandler) {
         JsonObject user = new JsonObject().put("name", name).put("email", email).put("password", password);
         mongoClient.insert(COLLECTION, user, res -> {
@@ -50,14 +63,14 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public void findAuthByUserId(String userId, Handler<AsyncResult<JsonArray>> resultHandler) {
         JsonObject query = new JsonObject().put("_id", userId);
-        JsonObject fields =new JsonObject().put("projects",1);
-        mongoClient.findOne(COLLECTION, query,fields, res -> {
-           if(res.result()!=null) {
-               JsonArray auths = res.result().getJsonArray("projects");
-               resultHandler.handle(Future.succeededFuture(auths));
-           } else {
-               resultHandler.handle(Future.failedFuture(res.cause()));
-           }
+        JsonObject fields = new JsonObject().put("projects", 1);
+        mongoClient.findOne(COLLECTION, query, fields, res -> {
+            if (res.result() != null) {
+                JsonArray auths = res.result().getJsonArray("projects");
+                resultHandler.handle(Future.succeededFuture(auths));
+            } else {
+                resultHandler.handle(Future.failedFuture(res.cause()));
+            }
         });
     }
 }
