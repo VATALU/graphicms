@@ -13,6 +13,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 
+import java.util.List;
 import java.util.Map;
 
 @VertxGen
@@ -32,6 +33,8 @@ public interface MongoService {
     void findUserByUserId(String userId, Handler<AsyncResult<User>> resultHandler);
 
     void createUser(String name, String email, String password, Handler<AsyncResult<Void>> resultHandler);
+
+    void findOwnersByProjectId(String projectId,  Handler<AsyncResult<List<JsonObject>>> resultHandler);
 
     void findAllProjectsByUserId(String userId, Handler<AsyncResult<JsonArray>> resultHandler);
 
@@ -56,4 +59,8 @@ public interface MongoService {
     void findModelByModelId(String modelId, Handler<AsyncResult<Model>> resultHandler);
 
     void qraphqlQuery(String collection, JsonObject arguments, Handler<AsyncResult<JsonObject>> resultHandler);
+
+    void graphqlMutation(String collection, JsonObject arguments, Handler<AsyncResult<Void>> resultHandler);
+
+    void deleteDocumentByItemId(String collection, String modelId, Handler<AsyncResult<Void>> resultHandler);
 }

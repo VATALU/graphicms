@@ -1,7 +1,5 @@
 package com.graphicms.service.impl;
 
-import com.graphicms.graphQL.dataFetcher.AsyncDataFetcher;
-import com.graphicms.graphQL.queryExecutor.AsyncGraphQLExec;
 import com.graphicms.model.PO.Field;
 import com.graphicms.model.PO.Model;
 import com.graphicms.model.PO.User;
@@ -12,14 +10,6 @@ import com.graphicms.repository.impl.CollectionRepositoryImpl;
 import com.graphicms.repository.impl.ProjectRepositoryImpl;
 import com.graphicms.repository.impl.UserRepositoryImpl;
 import com.graphicms.service.MongoService;
-import graphql.ExecutionResult;
-import graphql.GraphQL;
-import graphql.Scalars;
-import graphql.schema.*;
-import graphql.schema.idl.RuntimeWiring;
-import graphql.schema.idl.SchemaGenerator;
-import graphql.schema.idl.SchemaParser;
-import graphql.schema.idl.TypeDefinitionRegistry;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
@@ -31,12 +21,10 @@ import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.plaf.FontUIResource;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static graphql.schema.GraphQLArgument.newArgument;
-import static graphql.schema.idl.RuntimeWiring.newRuntimeWiring;
 
 public class MongoServiceImpl implements MongoService {
 
@@ -77,6 +65,7 @@ public class MongoServiceImpl implements MongoService {
 
     @Override
     public void createUser(String name, String email, String password, Handler<AsyncResult<Void>> resultHandler) {
+
         userRepository.findOneByName(name, res -> {
             if (res.succeeded()) {
                 resultHandler.handle(Future.failedFuture("Username Duplicate"));
@@ -84,6 +73,11 @@ public class MongoServiceImpl implements MongoService {
                 userRepository.insert(name, email, password, resultHandler);
             }
         });
+    }
+
+    @Override
+    public void findOwnersByProjectId(String projectId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+        userRepository.findUsersByProjectId(projectId,resultHandler);
     }
 
     @Override
@@ -132,11 +126,17 @@ public class MongoServiceImpl implements MongoService {
     @Override
     public void insertModelsByProjectId(String projectId, Model model, Handler<AsyncResult<String>> resultHandler) {
         String modelId = new ObjectId().toHexString();
-        model.setGraphqlType("type " + model.getName() + "{}");
         model.set_id(modelId);
         projectRepository.createModelByProjectId(projectId, model, res -> {
             if (res.succeeded()) {
-                resultHandler.handle(Future.succeededFuture(modelId));
+                //创建model document
+                collectionRepository.createDocument(modelId, res2 -> {
+                    if (res2.succeeded()) {
+                        resultHandler.handle(Future.succeededFuture(modelId));
+                    } else {
+                        resultHandler.handle(Future.failedFuture(res.cause()));
+                    }
+                });
             } else {
                 resultHandler.handle(Future.failedFuture(res.cause()));
             }
@@ -145,28 +145,22 @@ public class MongoServiceImpl implements MongoService {
 
     @Override
     public void deleteModelByProjectIdAndModelId(String projectId, String modelId, Handler<AsyncResult<Void>> resultHandler) {
-        projectRepository.deleteModelByProjectIdAndModelId(projectId, modelId, resultHandler);
-        //TODO delete model document
+        projectRepository.deleteModelByProjectIdAndModelId(projectId, modelId, res -> {
+            if (res.succeeded()) {
+                //delete model document
+                collectionRepository.deleteCollection(modelId, resultHandler);
+            } else {
+                resultHandler.handle(Future.failedFuture(res.cause()));
+            }
+        });
     }
 
     @Override
     public void createFieldByProjectIdAndModelId(String projectId, String modelId, JsonObject field, Handler<AsyncResult<Void>> resultHandler) {
         projectRepository.createFieldByProjectIdAndModelId(projectId, modelId, new Field(field), res1 -> {
             if (res1.succeeded()) {
-                projectRepository.findModelByProjectIdAndModelId(projectId, modelId, res2 -> {
-                    if (res2.succeeded()) {
-                        Model model = res2.result();
-                        String graphqlType = model.getGraphqlType();
-                        String newField = " " + field.getString("name") + ":" + field.getString("type");
-                        StringBuilder stringBuilder = new StringBuilder(graphqlType);
-                        stringBuilder.insert(graphqlType.indexOf("}"), newField);
-                        String newGraphqlType = stringBuilder.toString();
-                        projectRepository.updateGraphQLTypeField(projectId, modelId, newGraphqlType, resultHandler);
-                    } else {
-                        //TODO roll back
-                        resultHandler.handle(Future.failedFuture(res2.cause()));
-                    }
-                });
+                //add document field
+                collectionRepository.addFieldToDocument(modelId, field.getString("name"), resultHandler);
             } else {
                 resultHandler.handle(Future.failedFuture(res1.cause()));
             }
@@ -179,29 +173,12 @@ public class MongoServiceImpl implements MongoService {
         JsonObject field = new JsonObject().put("name", fieldName);
         projectRepository.deleteFieldByProjectIdAndModelIdAndName(projectId, modelId, field, res1 -> {
             if (res1.succeeded()) {
-                projectRepository.findModelByProjectIdAndModelId(projectId, modelId, res2 -> {
-                    if (res2.succeeded()) {
-                        String newGrahqlType;
-                        String graphqlType = res2.result().getGraphqlType();
-                        int index = graphqlType.indexOf(fieldName);
-                        String s = graphqlType.substring(index);
-                        int spaceIndex = s.indexOf(" ");
-                        if (spaceIndex == -1) {
-                            newGrahqlType = graphqlType.substring(0, index) + "}";
-                        } else {
-                            newGrahqlType = graphqlType.substring(0, index) + s.substring(spaceIndex);
-                        }
-                        projectRepository.updateGraphQLTypeField(projectId, modelId, newGrahqlType, resultHandler);
-                    } else {
-                        //TODO roll back
-                        resultHandler.handle(Future.failedFuture(res1.cause()));
-                    }
-                });
+                // delete document field
+                collectionRepository.deleteFieldByFieldName(modelId, fieldName, resultHandler);
             } else {
                 resultHandler.handle(Future.failedFuture(res1.cause()));
             }
         });
-        //TODO delete document field
     }
 
     @Override
@@ -221,8 +198,19 @@ public class MongoServiceImpl implements MongoService {
 
     @Override
     public void qraphqlQuery(String collection, JsonObject arguments, Handler<AsyncResult<JsonObject>> resultHandler) {
-        Map<String,Object> argumentsMap=arguments.getMap();
-        collectionRepository.graphqlCollection(collection, argumentsMap, resultHandler);
+        Map<String, Object> argumentsMap = arguments.getMap();
+        collectionRepository.graphqlQueryDocument(collection, argumentsMap, resultHandler);
+    }
+
+    @Override
+    public void graphqlMutation(String collection, JsonObject arguments, Handler<AsyncResult<Void>> resultHandler) {
+        Map<String, Object> argumentsMap = arguments.getMap();
+        collectionRepository.graphqlUpsertDocument(collection, argumentsMap, resultHandler);
+    }
+
+    @Override
+    public void deleteDocumentByItemId(String collection, String modelId, Handler<AsyncResult<Void>> resultHandler) {
+        collectionRepository.deleteDocument(collection, modelId, resultHandler);
     }
 
 

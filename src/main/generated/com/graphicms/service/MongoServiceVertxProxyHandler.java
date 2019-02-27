@@ -42,6 +42,7 @@ import io.vertx.serviceproxy.ServiceExceptionMessageCodec;
 import io.vertx.serviceproxy.HelperUtils;
 
 import io.vertx.core.json.JsonArray;
+import java.util.List;
 import com.graphicms.service.MongoService;
 import com.graphicms.model.PO.User;
 import io.vertx.core.Vertx;
@@ -157,6 +158,11 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
                         HelperUtils.createHandler(msg));
           break;
         }
+        case "findOwnersByProjectId": {
+          service.findOwnersByProjectId((java.lang.String)json.getValue("projectId"),
+                        HelperUtils.createListHandler(msg));
+          break;
+        }
         case "findAllProjectsByUserId": {
           service.findAllProjectsByUserId((java.lang.String)json.getValue("userId"),
                         HelperUtils.createHandler(msg));
@@ -243,6 +249,18 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
         case "qraphqlQuery": {
           service.qraphqlQuery((java.lang.String)json.getValue("collection"),
                         (io.vertx.core.json.JsonObject)json.getValue("arguments"),
+                        HelperUtils.createHandler(msg));
+          break;
+        }
+        case "graphqlMutation": {
+          service.graphqlMutation((java.lang.String)json.getValue("collection"),
+                        (io.vertx.core.json.JsonObject)json.getValue("arguments"),
+                        HelperUtils.createHandler(msg));
+          break;
+        }
+        case "deleteDocumentByItemId": {
+          service.deleteDocumentByItemId((java.lang.String)json.getValue("collection"),
+                        (java.lang.String)json.getValue("modelId"),
                         HelperUtils.createHandler(msg));
           break;
         }

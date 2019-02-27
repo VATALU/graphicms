@@ -11,6 +11,8 @@ import io.vertx.ext.mongo.MongoClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 public class UserRepositoryImpl implements UserRepository {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(UserRepositoryImpl.class);
@@ -42,6 +44,31 @@ public class UserRepositoryImpl implements UserRepository {
             if (res.result() != null) {
                 User user = new User(res.result());
                 resultHandler.handle(Future.succeededFuture(user));
+            } else {
+                resultHandler.handle(Future.failedFuture(res.cause()));
+            }
+        });
+    }
+
+    @Override
+    public void findUsersByProjectId(String projectId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+        JsonObject query = new JsonObject().put("projects._id",projectId);
+        mongoClient.find(COLLECTION,query,res->{
+           if(res.result()!=null) {
+               resultHandler.handle(Future.succeededFuture(res.result()));
+           } else {
+               resultHandler.handle(Future.failedFuture(res.cause()));
+           }
+        });
+    }
+
+    @Override
+    public void insertProjectByUserId(String userId, JsonObject project, Handler<AsyncResult<Void>> resultHandler) {
+        JsonObject query = new JsonObject().put("_id",userId);
+        JsonObject update = new JsonObject().put("$addToSet",new JsonObject().put("projects",project));
+        mongoClient.updateCollection(COLLECTION,query,update,res->{
+            if(res.succeeded()) {
+                resultHandler.handle(Future.succeededFuture());
             } else {
                 resultHandler.handle(Future.failedFuture(res.cause()));
             }

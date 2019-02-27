@@ -108,4 +108,16 @@ public class ProjectController {
             }
         });
     }
+
+    public void deleteDocumentByItemId(RoutingContext routingContext) {
+        String modelId = routingContext.request().getParam("modelId");
+        String itemId = routingContext.request().getParam("itemId");
+        mongoService.deleteDocumentByItemId(modelId, itemId, res -> {
+            if (res.succeeded()) {
+                Api.response(routingContext, 200);
+            } else {
+                Api.failure(routingContext, 200, res.cause().getMessage());
+            }
+        });
+    }
 }

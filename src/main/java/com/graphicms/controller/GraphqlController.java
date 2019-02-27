@@ -11,10 +11,7 @@ import com.graphicms.service.MongoService;
 import com.graphicms.util.Api;
 import com.graphicms.util.StringUtil;
 import graphql.Scalars;
-import graphql.schema.GraphQLFieldDefinition;
-import graphql.schema.GraphQLObjectType;
-import graphql.schema.GraphQLScalarType;
-import graphql.schema.GraphQLSchema;
+import graphql.schema.*;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
@@ -37,12 +34,12 @@ public class GraphqlController {
             JsonObject body = routingContext.getBodyAsJson();
             String modelId = body.getString("modelId");
             String graphqlQuery = body.getString("query");
+            System.out.println(graphqlQuery);
             mongoService.findModelByModelId(modelId, res1 -> {
                         if (res1.succeeded()) {
                             //define schema
                             System.out.println(res1.result());
-                            GraphQLObjectType query = defineSchema(res1.result());
-                            GraphQLSchema graphQLSchema = GraphQLSchema.newSchema().query(query).build();
+                            GraphQLSchema graphQLSchema = defineSchema(res1.result());
                             AsyncGraphQLExec asyncGraphQLExec = AsyncGraphQLExec.create(graphQLSchema);
                             asyncGraphQLExec.executeQuery(graphqlQuery, null, routingContext, null).setHandler(queryResult -> {
                                 if (queryResult.succeeded()) {
@@ -71,7 +68,7 @@ public class GraphqlController {
     }
 
 
-    private GraphQLObjectType defineSchema(Model model) {
+    private GraphQLSchema defineSchema(Model model) {
         JsonArray fields = model.getFields();
         String modelName = model.getName();
         String modelId = model.get_id();
@@ -127,10 +124,46 @@ public class GraphqlController {
             fieldBuilder.argument(newArgument().name(StringUtil.toLowerCaseFirstOne(f.getName())).type(scalarsMap.get(f.getType())).build());
         });
         fieldBuilder.dataFetcher(dataFetcher);
+        //query
         GraphQLObjectType query = GraphQLObjectType.newObject()
                 .name("Query")
                 .field(fieldBuilder)
                 .build();
-        return query;
+        //inputObjectType
+        //TODO not scalar input type, should be defined
+
+        //mutaion field
+        GraphQLFieldDefinition.Builder mutationFieldBuilder = GraphQLFieldDefinition.newFieldDefinition().name(modelName).type(Scalars.GraphQLString);
+        fields.forEach(field -> {
+            Field f = new Field((JsonObject) field);
+            mutationFieldBuilder.argument(newArgument().name(StringUtil.toLowerCaseFirstOne(f.getName())).type(scalarsMap.get(f.getType())));
+        });
+        //添加id
+        mutationFieldBuilder.argument(newArgument().name("_id").type(Scalars.GraphQLString));
+        //mutation datafetcher
+        AsyncDataFetcher<String> mutationDataFetcher = (env, handler) -> {
+            Map<String, Object> argumentsMap = env.getArguments();
+            Map<String, Object> upperArgumentsMap = new HashMap<>();
+            Set<Map.Entry<String, Object>> argumentsMapEntries = argumentsMap.entrySet();
+            argumentsMapEntries.forEach(argumentsMapEntry -> {
+                String key = StringUtil.toUpperCaseFirstOne(argumentsMapEntry.getKey());
+                upperArgumentsMap.put(key, argumentsMapEntry.getValue());
+            });
+
+            JsonObject arguments = new JsonObject(upperArgumentsMap);
+            mongoService.graphqlMutation(modelId, arguments, res -> {
+                if (res.succeeded()) {
+                    handler.handle(Future.succeededFuture("success"));
+                } else {
+                    handler.handle(Future.failedFuture(res.cause()));
+                }
+            });
+        };
+        GraphQLFieldDefinition mutationFieldDefinition = mutationFieldBuilder.dataFetcher(mutationDataFetcher).build();
+        //mutation
+        GraphQLObjectType mutation = GraphQLObjectType.newObject().name("result").field(mutationFieldDefinition).build();
+
+        //schema
+        return GraphQLSchema.newSchema().query(query).mutation(mutation).build();
     }
 }

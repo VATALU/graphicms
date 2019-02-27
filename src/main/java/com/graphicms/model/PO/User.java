@@ -13,6 +13,7 @@ public class User {
     private String name;
     private String password;
     private String email;
+    private String avatar;
     private JsonArray groups;
     private JsonArray projects;
 
@@ -26,6 +27,7 @@ public class User {
         this.email = json.getString("email");
         this.groups = json.getJsonArray("groups");
         this.projects = json.getJsonArray("projects");
+        this.avatar = json.getString("avatar");
     }
 
     public JsonObject toJson() {
@@ -34,14 +36,16 @@ public class User {
                 .put("password", password)
                 .put("email", email)
                 .put("groups", groups)
-                .put("projects", projects);
+                .put("projects", projects)
+                .put("avatar", avatar);
     }
 
-    public User(String _id, String name, String password, String email, JsonArray groups, JsonArray projects) {
+    public User(String _id, String name, String password, String email, String avatar, JsonArray groups, JsonArray projects) {
         this._id = _id;
         this.name = name;
         this.password = password;
         this.email = email;
+        this.avatar = avatar;
         this.groups = groups;
         this.projects = projects;
     }
@@ -94,6 +98,14 @@ public class User {
         this.projects = projects;
     }
 
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -101,6 +113,7 @@ public class User {
                 ", name='" + name + '\'' +
                 ", password='" + password + '\'' +
                 ", email='" + email + '\'' +
+                ", avatar='" + avatar + '\'' +
                 ", groups=" + groups +
                 ", projects=" + projects +
                 '}';

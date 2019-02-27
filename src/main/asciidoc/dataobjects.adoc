@@ -1,5 +1,28 @@
 = Cheatsheets
 
+[[Auth]]
+== Auth
+
+
+[cols=">25%,25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[auth]]`@auth`|`String`|-
+|===
+
+[[Field]]
+== Field
+
+
+[cols=">25%,25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[name]]`@name`|`String`|-
+|[[type]]`@type`|`String`|-
+|===
+
 [[Model]]
 == Model
 
@@ -14,6 +37,19 @@
 |[[name]]`@name`|`String`|-
 |===
 
+[[Project]]
+== Project
+
+
+[cols=">25%,25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[description]]`@description`|`String`|-
+|[[models]]`@models`|`Json array`|-
+|[[name]]`@name`|`String`|-
+|===
+
 [[Student]]
 == Student
 
@@ -23,5 +59,21 @@
 |===
 ^|Name | Type ^| Description
 |[[name]]`@name`|`String`|-
+|===
+
+[[User]]
+== User
+
+
+[cols=">25%,25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[avatar]]`@avatar`|`String`|-
+|[[email]]`@email`|`String`|-
+|[[groups]]`@groups`|`Json array`|-
+|[[name]]`@name`|`String`|-
+|[[password]]`@password`|`String`|-
+|[[projects]]`@projects`|`Json array`|-
 |===
 

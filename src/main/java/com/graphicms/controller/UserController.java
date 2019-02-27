@@ -86,4 +86,15 @@ public class UserController {
         };
         mongoService.findUserByName(name, handler);
     }
+
+    public void findOwnersByProjectId(RoutingContext routingContext) {
+        String projectId = routingContext.request().getParam("projectId");
+        mongoService.findOwnersByProjectId(projectId,res->{
+            if(res.succeeded()) {
+                Api.response(routingContext,200,"data",res.result());
+            } else {
+                Api.failure(routingContext,200);
+            }
+        });
+    }
 }
