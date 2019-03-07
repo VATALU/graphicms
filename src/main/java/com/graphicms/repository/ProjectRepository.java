@@ -2,6 +2,7 @@ package com.graphicms.repository;
 
 import com.graphicms.model.PO.Field;
 import com.graphicms.model.PO.Model;
+import com.graphicms.model.PO.Project;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
@@ -28,4 +29,8 @@ public interface ProjectRepository {
     void updateGraphQLTypeField(String projectId, String modelId, String graphQLType, Handler<AsyncResult<Void>> resultHandler);
 
     void findContentByModelId(String modelId, Handler<AsyncResult<JsonArray>> resultHandler);
+
+    void createProject(Project project,Handler<AsyncResult<Void>> resultHandler);
+
+    void deleteProject(String projectId,Handler<AsyncResult<Void>> resultHandler);
 }

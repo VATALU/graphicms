@@ -31,13 +31,17 @@ public class User {
     }
 
     public JsonObject toJson() {
-        return new JsonObject().put("_id", _id)
+        JsonObject json = new JsonObject().put("_id", _id)
                 .put("name", name)
                 .put("password", password)
                 .put("email", email)
                 .put("groups", groups)
-                .put("projects", projects)
-                .put("avatar", avatar);
+                .put("projects", projects);
+        if (avatar == null)
+            json.put("avatar","avatar0.jpg");
+        else
+            json.put("avatar",avatar);
+        return json;
     }
 
     public User(String _id, String name, String password, String email, String avatar, JsonArray groups, JsonArray projects) {

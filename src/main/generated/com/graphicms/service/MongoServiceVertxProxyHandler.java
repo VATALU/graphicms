@@ -41,13 +41,14 @@ import io.vertx.serviceproxy.ServiceException;
 import io.vertx.serviceproxy.ServiceExceptionMessageCodec;
 import io.vertx.serviceproxy.HelperUtils;
 
-import io.vertx.core.json.JsonArray;
-import java.util.List;
 import com.graphicms.service.MongoService;
-import com.graphicms.model.PO.User;
 import io.vertx.core.Vertx;
 import io.vertx.ext.mongo.MongoClient;
+import io.vertx.core.json.JsonArray;
+import java.util.List;
+import com.graphicms.model.PO.User;
 import io.vertx.core.json.JsonObject;
+import com.graphicms.model.PO.Project;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import com.graphicms.model.PO.Model;
@@ -261,6 +262,43 @@ public class MongoServiceVertxProxyHandler extends ProxyHandler {
         case "deleteDocumentByItemId": {
           service.deleteDocumentByItemId((java.lang.String)json.getValue("collection"),
                         (java.lang.String)json.getValue("modelId"),
+                        HelperUtils.createHandler(msg));
+          break;
+        }
+        case "createProjectByUserId": {
+          service.createProjectByUserId((java.lang.String)json.getValue("userId"),
+                        (java.lang.String)json.getValue("auth"),
+                        json.getJsonObject("project") == null ? null : new com.graphicms.model.PO.Project(json.getJsonObject("project")),
+                        HelperUtils.createHandler(msg));
+          break;
+        }
+        case "deleteProjectByUserIdAndProjectId": {
+          service.deleteProjectByUserIdAndProjectId((java.lang.String)json.getValue("userId"),
+                        (java.lang.String)json.getValue("projectId"),
+                        HelperUtils.createHandler(msg));
+          break;
+        }
+        case "updateProjectAuthByUserIdAndProjectId": {
+          service.updateProjectAuthByUserIdAndProjectId((java.lang.String)json.getValue("userId"),
+                        (java.lang.String)json.getValue("projectId"),
+                        (java.lang.String)json.getValue("auth"),
+                        HelperUtils.createHandler(msg));
+          break;
+        }
+        case "findUserByUserName": {
+          service.findUserByUserName((java.lang.String)json.getValue("userName"),
+                        HelperUtils.createListHandler(msg));
+          break;
+        }
+        case "insertAuthByUserName": {
+          service.insertAuthByUserName((java.lang.String)json.getValue("userName"),
+                        (java.lang.String)json.getValue("projectId"),
+                        (java.lang.String)json.getValue("auth"),
+                        HelperUtils.createHandler(msg));
+          break;
+        }
+        case "findModelSizeByModelId": {
+          service.findModelSizeByModelId((java.lang.String)json.getValue("projectId"),
                         HelperUtils.createHandler(msg));
           break;
         }

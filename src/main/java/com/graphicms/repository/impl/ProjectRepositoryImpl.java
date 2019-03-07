@@ -2,6 +2,7 @@ package com.graphicms.repository.impl;
 
 import com.graphicms.model.PO.Field;
 import com.graphicms.model.PO.Model;
+import com.graphicms.model.PO.Project;
 import com.graphicms.repository.ProjectRepository;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -115,10 +116,33 @@ public class ProjectRepositoryImpl implements ProjectRepository {
         mongoClient.find(modelId, new JsonObject(), res -> {
             if (res.result().size() > 0) {
                 JsonArray jsonArray = new JsonArray();
-                for(JsonObject jsonObject :res.result()) {
+                for (JsonObject jsonObject : res.result()) {
                     jsonArray.add(jsonObject);
                 }
                 resultHandler.handle(Future.succeededFuture(jsonArray));
+            } else {
+                resultHandler.handle(Future.failedFuture(res.cause()));
+            }
+        });
+    }
+
+    @Override
+    public void createProject(Project project, Handler<AsyncResult<Void>> resultHandler) {
+        mongoClient.insert(COLLECTION, project.toJson(), res -> {
+            if (res.succeeded()) {
+                resultHandler.handle(Future.succeededFuture());
+            } else {
+                resultHandler.handle(Future.failedFuture(res.cause()));
+            }
+        });
+    }
+
+    @Override
+    public void deleteProject(String projectId, Handler<AsyncResult<Void>> resultHandler) {
+        JsonObject query = new JsonObject().put("_id", projectId);
+        mongoClient.removeDocument(COLLECTION, query, res -> {
+            if (res.succeeded()) {
+                resultHandler.handle(Future.succeededFuture());
             } else {
                 resultHandler.handle(Future.failedFuture(res.cause()));
             }

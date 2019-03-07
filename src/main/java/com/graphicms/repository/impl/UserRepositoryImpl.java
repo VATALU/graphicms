@@ -52,22 +52,22 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public void findUsersByProjectId(String projectId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
-        JsonObject query = new JsonObject().put("projects._id",projectId);
-        mongoClient.find(COLLECTION,query,res->{
-           if(res.result()!=null) {
-               resultHandler.handle(Future.succeededFuture(res.result()));
-           } else {
-               resultHandler.handle(Future.failedFuture(res.cause()));
-           }
+        JsonObject query = new JsonObject().put("projects._id", projectId);
+        mongoClient.find(COLLECTION, query, res -> {
+            if (res.result() != null) {
+                resultHandler.handle(Future.succeededFuture(res.result()));
+            } else {
+                resultHandler.handle(Future.failedFuture(res.cause()));
+            }
         });
     }
 
     @Override
     public void insertProjectByUserId(String userId, JsonObject project, Handler<AsyncResult<Void>> resultHandler) {
-        JsonObject query = new JsonObject().put("_id",userId);
-        JsonObject update = new JsonObject().put("$addToSet",new JsonObject().put("projects",project));
-        mongoClient.updateCollection(COLLECTION,query,update,res->{
-            if(res.succeeded()) {
+        JsonObject query = new JsonObject().put("_id", userId);
+        JsonObject update = new JsonObject().put("$addToSet", new JsonObject().put("projects", project));
+        mongoClient.updateCollection(COLLECTION, query, update, res -> {
+            if (res.succeeded()) {
                 resultHandler.handle(Future.succeededFuture());
             } else {
                 resultHandler.handle(Future.failedFuture(res.cause()));
@@ -76,7 +76,45 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public void insert(String name, String email, String password, Handler<AsyncResult<Void>> resultHandler) {
+    public void deleteProjectByUserId(String userId, String projectId, Handler<AsyncResult<Void>> resultHandler) {
+        JsonObject query = new JsonObject().put("_id", userId);
+        JsonObject update = new JsonObject().put("$pull", new JsonObject().put("projects", new JsonObject().put("_id", projectId)));
+        mongoClient.updateCollection(COLLECTION, query, update, res -> {
+            if (res.succeeded()) {
+                resultHandler.handle(Future.succeededFuture());
+            } else {
+                resultHandler.handle(Future.failedFuture(res.cause()));
+            }
+        });
+    }
+
+    @Override
+    public void updateProjectAuthByUserId(String userId, String projectId, String auth, Handler<AsyncResult<Void>> resultHandler) {
+        JsonObject query = new JsonObject().put("_id", userId).put("project._id", projectId);
+        JsonObject update = new JsonObject().put("$set", new JsonObject().put("projects.$.auth", auth));
+        mongoClient.updateCollection(COLLECTION, query, update, res -> {
+            if (res.succeeded()) {
+                resultHandler.handle(Future.succeededFuture());
+            } else {
+                resultHandler.handle(Future.failedFuture(res.cause()));
+            }
+        });
+    }
+
+    @Override
+    public void findUserByUserName(String userName, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+        JsonObject query = new JsonObject().put("$text",new JsonObject().put("$search",userName));
+        mongoClient.find(COLLECTION,query,res->{
+            if(res.succeeded()) {
+                resultHandler.handle(Future.succeededFuture(res.result()));
+            } else {
+                resultHandler.handle(Future.failedFuture(res.cause()));
+            }
+        });
+    }
+
+    @Override
+    public void insert(String userId, String name, String email, String password, Handler<AsyncResult<Void>> resultHandler) {
         JsonObject user = new JsonObject().put("name", name).put("email", email).put("password", password);
         mongoClient.insert(COLLECTION, user, res -> {
             if (res.succeeded()) {
@@ -98,6 +136,20 @@ public class UserRepositoryImpl implements UserRepository {
             } else {
                 resultHandler.handle(Future.failedFuture(res.cause()));
             }
+        });
+    }
+
+    @Override
+    public void insertAuthByUserName(String userName, String projectId, String auth, Handler<AsyncResult<Void>> resultHandler){
+        JsonObject query = new JsonObject().put("name", userName);
+        JsonObject update=new JsonObject().put("$addToSet",new JsonObject().put("projects",new JsonObject().put("_id",projectId).put("auth",auth)));
+        mongoClient.updateCollection(COLLECTION,query,update,res->{
+           if(res.succeeded()) {
+               resultHandler.handle(Future.succeededFuture());
+           } else {
+               resultHandler.handle(Future.failedFuture(res.cause()));
+           }
+
         });
     }
 }

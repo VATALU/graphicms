@@ -2,6 +2,7 @@ package com.graphicms.service;
 
 import com.graphicms.model.PO.Field;
 import com.graphicms.model.PO.Model;
+import com.graphicms.model.PO.Project;
 import com.graphicms.model.PO.User;
 import com.graphicms.service.impl.MongoServiceImpl;
 import io.vertx.codegen.annotations.ProxyGen;
@@ -32,9 +33,9 @@ public interface MongoService {
 
     void findUserByUserId(String userId, Handler<AsyncResult<User>> resultHandler);
 
-    void createUser(String name, String email, String password, Handler<AsyncResult<Void>> resultHandler);
+    void createUser(String name, String email, String password, Handler<AsyncResult<String>> resultHandler);
 
-    void findOwnersByProjectId(String projectId,  Handler<AsyncResult<List<JsonObject>>> resultHandler);
+    void findOwnersByProjectId(String projectId, Handler<AsyncResult<List<JsonObject>>> resultHandler);
 
     void findAllProjectsByUserId(String userId, Handler<AsyncResult<JsonArray>> resultHandler);
 
@@ -63,4 +64,16 @@ public interface MongoService {
     void graphqlMutation(String collection, JsonObject arguments, Handler<AsyncResult<Void>> resultHandler);
 
     void deleteDocumentByItemId(String collection, String modelId, Handler<AsyncResult<Void>> resultHandler);
+
+    void createProjectByUserId(String userId, String auth, Project project, Handler<AsyncResult<String>> resultHandler);
+
+    void deleteProjectByUserIdAndProjectId(String userId, String projectId, Handler<AsyncResult<Void>> resultHandler);
+
+    void updateProjectAuthByUserIdAndProjectId(String userId, String projectId, String auth, Handler<AsyncResult<Void>> resultHandler);
+
+    void findUserByUserName(String userName,Handler<AsyncResult<List<JsonObject>>> resultHandler);
+
+    void insertAuthByUserName(String userName, String projectId, String auth, Handler<AsyncResult<Void>> resultHandler);
+
+    void findModelSizeByModelId(String projectId, Handler<AsyncResult<Integer>> resultHandler);
 }

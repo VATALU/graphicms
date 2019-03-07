@@ -25,7 +25,13 @@ public class CollectionRepositoryImpl implements CollectionRepository {
 
     @Override
     public void findCollectionStats(String collection, Handler<AsyncResult<JsonObject>> resultHandler) {
-
+        mongoClient.runCommand("collStats",new JsonObject().put("collStats",collection),res->{
+           if(res.succeeded()) {
+               resultHandler.handle(Future.succeededFuture(res.result()));
+           }else {
+               resultHandler.handle(Future.failedFuture(res.cause()));
+           }
+        });
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.graphicms.controller;
 
 import com.graphicms.model.PO.Model;
+import com.graphicms.model.PO.Project;
 import com.graphicms.service.MongoService;
 import com.graphicms.util.Api;
 import io.vertx.core.json.JsonObject;
@@ -117,6 +118,31 @@ public class ProjectController {
                 Api.response(routingContext, 200);
             } else {
                 Api.failure(routingContext, 200, res.cause().getMessage());
+            }
+        });
+    }
+
+    public void createProject(RoutingContext routingContext) {
+        String userId =routingContext.request().getParam("userId");
+        JsonObject body = routingContext.getBodyAsJson();
+        Project project = new Project(body.getJsonObject("project"));
+        String authority = body.getString("auth");
+        mongoService.createProjectByUserId(userId,authority,project,res->{
+            if(res.succeeded()) {
+                Api.response(routingContext,200,"projectId",res.result());
+            } else {
+                Api.failure(routingContext,200);
+            }
+        });
+    }
+
+    public void findModelSize(RoutingContext routingContext) {
+        String projectId =routingContext.request().getParam("modelId");
+        mongoService.findModelSizeByModelId(projectId, res->{
+            if(res.succeeded()) {
+                Api.response(routingContext,200,"size",res.result());
+            } else {
+                Api.failure(routingContext,200);
             }
         });
     }

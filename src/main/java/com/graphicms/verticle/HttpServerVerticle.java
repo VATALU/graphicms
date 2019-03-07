@@ -3,18 +3,11 @@ package com.graphicms.verticle;
 import com.graphicms.controller.GraphqlController;
 import com.graphicms.controller.ProjectController;
 import com.graphicms.controller.UserController;
-import com.graphicms.graphQL.dataFetcher.AsyncDataFetcher;
 import com.graphicms.service.MongoService;
-import graphql.GraphQL;
-import graphql.Scalars;
-import graphql.schema.GraphQLFieldDefinition;
-import graphql.schema.GraphQLObjectType;
-import graphql.schema.GraphQLSchema;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
@@ -93,11 +86,16 @@ public class HttpServerVerticle extends AbstractVerticle {
 //        router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
 
         router.get("/api/user/:userId").handler(userController::findOneUserByUserId);
+        router.get("/api/user/fulltext/:userName").handler(userController::findUserByUserName);
         router.get("/api/project/:projectId/users").handler(userController::findOwnersByProjectId);
         router.post("/api/login").handler(userController::login);
         router.post("/api/signup").handler(userController::createOneUser);
         router.get("/api/projects/:userId").handler(projectController::findAllProjectsByUserId);
         router.delete("/api/project/:projectId/model/:modelId").handler(projectController::deleteModelByProjectIdAndModelId);
+        router.post("/api/user/:userId/project").handler(projectController::createProject);
+        router.delete("/api/user/:userId/project/:projectId").handler(userController::deleteProject);
+        router.put("/api/user/:userId/project/:projectId/auth").handler(userController::updateAuth);
+        router.post("/api/user/:userName/project/:projectId/auth").handler(userController::insertAuth);
         router.get("/api/project/:projectId/models").handler(projectController::findModelsByProjectId);
         router.post("/api/project/:projectId/model").handler(projectController::insertModelByProjectId);
         router.get("/api/project/:projectId/model/:modelId").handler(projectController::findModelByProjectIdAndModelId);
@@ -105,6 +103,7 @@ public class HttpServerVerticle extends AbstractVerticle {
         router.delete("/api/project/:projectId/model/:modelId/field/:fieldName").handler(projectController::deleteField);
         router.delete("/api/model/:modelId/itemId/:itemId").handler(projectController::deleteDocumentByItemId);
         router.get("/api/project/:projectId/model/:modelId/content").handler(projectController::findContent);
+        router.get("/api/model/:modelId/size").handler(projectController::findModelSize);
         router.post("/api/graphql").handler(graphqlController.graphql());
         //        router.post("/graphql")
 //                .handler(GraphQLPostHandler.create(graphQLSchema));

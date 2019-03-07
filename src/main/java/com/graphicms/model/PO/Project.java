@@ -23,11 +23,15 @@ public class Project {
     }
 
     public JsonObject toJson() {
-        return new JsonObject()
+        JsonObject json = new JsonObject()
                 .put("_id", _id)
                 .put("name", name)
-                .put("description", description)
-                .put("schemas", models);
+                .put("description", description);
+        if (models == null)
+            json.put("models", new JsonArray());
+        else
+            json.put("models",models);
+        return json;
     }
 
     public Project(String _id, String name, String description, JsonArray models) {
@@ -75,7 +79,7 @@ public class Project {
                 "_id='" + _id + '\'' +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
-                ", schemas=" + models +
+                ", models=" + models +
                 '}';
     }
 }

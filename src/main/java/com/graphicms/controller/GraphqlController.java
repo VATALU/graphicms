@@ -75,6 +75,8 @@ public class GraphqlController {
         Map<String, GraphQLScalarType> scalarsMap = new HashMap<String, GraphQLScalarType>() {{
             this.put("String", Scalars.GraphQLString);
             this.put("Int", Scalars.GraphQLInt);
+            this.put("Float",Scalars.GraphQLFloat);
+            this.put("Boolean",Scalars.GraphQLBoolean);
         }};
 
         //type
@@ -129,8 +131,8 @@ public class GraphqlController {
                 .name("Query")
                 .field(fieldBuilder)
                 .build();
-        //inputObjectType
-        //TODO not scalar input type, should be defined
+        //inputObjectTye
+        //mTODO not scalar input type, should be defined
 
         //mutaion field
         GraphQLFieldDefinition.Builder mutationFieldBuilder = GraphQLFieldDefinition.newFieldDefinition().name(modelName).type(Scalars.GraphQLString);

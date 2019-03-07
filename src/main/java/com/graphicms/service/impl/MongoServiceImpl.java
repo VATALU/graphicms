@@ -1,8 +1,6 @@
 package com.graphicms.service.impl;
 
-import com.graphicms.model.PO.Field;
-import com.graphicms.model.PO.Model;
-import com.graphicms.model.PO.User;
+import com.graphicms.model.PO.*;
 import com.graphicms.repository.CollectionRepository;
 import com.graphicms.repository.ProjectRepository;
 import com.graphicms.repository.UserRepository;
@@ -21,6 +19,7 @@ import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.security.MessageDigest;
 import java.util.List;
 import java.util.Map;
 
@@ -64,20 +63,27 @@ public class MongoServiceImpl implements MongoService {
     }
 
     @Override
-    public void createUser(String name, String email, String password, Handler<AsyncResult<Void>> resultHandler) {
-
+    public void createUser(String name, String email, String password, Handler<AsyncResult<String>> resultHandler) {
         userRepository.findOneByName(name, res -> {
             if (res.succeeded()) {
                 resultHandler.handle(Future.failedFuture("Username Duplicate"));
             } else {
-                userRepository.insert(name, email, password, resultHandler);
+                String userId = new ObjectId().toHexString();
+                userRepository.insert(userId, name, email, password, res2 -> {
+                    if (res2.succeeded()) {
+                        resultHandler.handle(Future.succeededFuture(userId));
+                    } else {
+                        resultHandler.handle(Future.failedFuture(res.cause()));
+
+                    }
+                });
             }
         });
     }
 
     @Override
     public void findOwnersByProjectId(String projectId, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
-        userRepository.findUsersByProjectId(projectId,resultHandler);
+        userRepository.findUsersByProjectId(projectId, resultHandler);
     }
 
     @Override
@@ -211,6 +217,71 @@ public class MongoServiceImpl implements MongoService {
     @Override
     public void deleteDocumentByItemId(String collection, String modelId, Handler<AsyncResult<Void>> resultHandler) {
         collectionRepository.deleteDocument(collection, modelId, resultHandler);
+    }
+
+    @Override
+    public void createProjectByUserId(String userId, String auth, Project project, Handler<AsyncResult<String>> resultHandler) {
+        String projectId = new ObjectId().toHexString();
+        project.set_id(projectId);
+        Auth authority = new Auth();
+        authority.set_id(projectId);
+        authority.setAuth(auth);
+        userRepository.insertProjectByUserId(userId, authority.toJson(), res -> {
+            if (res.succeeded()) {
+                projectRepository.createProject(project, res2 -> {
+                    if (res.succeeded()) {
+                        resultHandler.handle(Future.succeededFuture(projectId));
+                    } else {
+                        resultHandler.handle(Future.failedFuture(res.cause()));
+                    }
+                });
+            } else {
+                resultHandler.handle(Future.failedFuture(res.cause()));
+            }
+        });
+    }
+
+    @Override
+    public void deleteProjectByUserIdAndProjectId(String userId, String projectId, Handler<AsyncResult<Void>> resultHandler) {
+        Future<Void> deleteProjectFuture = Future.future();
+        projectRepository.deleteProject(projectId, deleteProjectFuture.completer());
+        deleteProjectFuture.compose(res -> {
+            Future<Void> future = Future.future();
+            userRepository.deleteProjectByUserId(userId, projectId, future);
+            return future;
+        }).setHandler(res -> {
+            if (res.succeeded()) {
+                resultHandler.handle(Future.succeededFuture());
+            } else {
+                resultHandler.handle(Future.failedFuture(res.cause()));
+            }
+        });
+    }
+
+    @Override
+    public void updateProjectAuthByUserIdAndProjectId(String userId, String projectId, String auth, Handler<AsyncResult<Void>> resultHandler) {
+        userRepository.updateProjectAuthByUserId(userId, projectId, auth, resultHandler);
+    }
+
+    @Override
+    public void findUserByUserName(String userName, Handler<AsyncResult<List<JsonObject>>> resultHandler) {
+        userRepository.findUserByUserName(userName, resultHandler);
+    }
+
+    @Override
+    public void insertAuthByUserName(String userName, String projectId, String auth, Handler<AsyncResult<Void>> resultHandler) {
+        userRepository.insertAuthByUserName(userName, projectId, auth, resultHandler);
+    }
+
+    @Override
+    public void findModelSizeByModelId(String modelId, Handler<AsyncResult<Integer>> resultHandler) {
+        collectionRepository.findCollectionStats(modelId,res->{
+            if(res.succeeded()) {
+                 resultHandler.handle(Future.succeededFuture(res.result().getInteger("size")));
+            } else {
+                resultHandler.handle(Future.failedFuture(res.cause()));
+            }
+        });
     }
 
 
