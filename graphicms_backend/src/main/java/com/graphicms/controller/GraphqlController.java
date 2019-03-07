@@ -6,7 +6,6 @@ import com.graphicms.graphQL.queryExecutor.AsyncGraphQLExec;
 import com.graphicms.model.CglibBean;
 import com.graphicms.model.PO.Field;
 import com.graphicms.model.PO.Model;
-import com.graphicms.model.PO.Student;
 import com.graphicms.service.MongoService;
 import com.graphicms.util.Api;
 import com.graphicms.util.StringUtil;

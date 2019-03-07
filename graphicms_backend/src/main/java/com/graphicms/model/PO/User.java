@@ -4,9 +4,6 @@ import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import java.util.List;
-import java.util.Map;
-
 @DataObject
 public class User {
     private String _id;
