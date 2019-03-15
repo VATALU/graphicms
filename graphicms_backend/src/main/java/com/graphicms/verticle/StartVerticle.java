@@ -25,17 +25,11 @@ public class StartVerticle extends AbstractVerticle {
             Future<String> httpVerticleFuture = Future.future();
             vertx.deployVerticle(new HttpServerVerticle(),deploymentOptions,httpVerticleFuture.completer());
             return httpVerticleFuture;
-        })
-//                .compose(res->{
-//            Future<String> graphqlVerticleFuture = Future.future();
-//            vertx.deployVerticle(new GraphqlVerticle(),deploymentOptions,graphqlVerticleFuture.completer());
-//            return graphqlVerticleFuture;
-//        })
-                .setHandler(stringAsyncResult -> {
-            if(stringAsyncResult.succeeded()) {
+        }).setHandler(res -> {
+            if(res.succeeded()) {
                 startFuture.succeeded();
             } else {
-                startFuture.fail(stringAsyncResult.cause());
+                startFuture.fail(res.cause());
             }
         });
     }

@@ -16,8 +16,6 @@ import io.vertx.ext.web.handler.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static graphql.schema.GraphQLArgument.newArgument;
-
 /**
  * server verticle
  */
@@ -45,37 +43,6 @@ public class HttpServerVerticle extends AbstractVerticle {
 
         //create server
         HttpServer server = vertx.createHttpServer();
-
-        //set graphql
-//        AsyncDataFetcher<JsonObject> userFetcher = (env, handler) -> {
-//            String name = env.getArgument("name");
-//            mongoService.findUserByName(name, handler);
-//        };
-//        GraphQLObjectType user = GraphQLObjectType.newObject()
-//                .name("user")
-//                .field(GraphQLFieldDefinition.newFieldDefinition()
-//                        .name("_id")
-//                        .type(Scalars.GraphQLString)
-//                )
-//                .field(GraphQLFieldDefinition.newFieldDefinition()
-//                        .name("name")
-//                        .type(Scalars.GraphQLString)
-//                )
-//                .field(GraphQLFieldDefinition.newFieldDefinition()
-//                        .name("password")
-//                        .type(Scalars.GraphQLString))
-//                .build();
-//        GraphQLObjectType query = GraphQLObjectType.newObject()
-//                .name("queryType")
-//                .field(GraphQLFieldDefinition.newFieldDefinition()
-//                        .name("user")
-//                        .type(user)
-//                        .argument(newArgument().name("name")
-//                                .type(Scalars.GraphQLString))
-//                        .dataFetcher(userFetcher))
-//                .build();
-//
-//        GraphQLSchema graphQLSchema = GraphQLSchema.newSchema().query(query).build();
 
         //init router
         Router router = Router.router(vertx);
@@ -105,8 +72,6 @@ public class HttpServerVerticle extends AbstractVerticle {
         router.get("/api/project/:projectId/model/:modelId/content").handler(projectController::findContent);
         router.get("/api/model/:modelId/size").handler(projectController::findModelSize);
         router.post("/api/graphql").handler(graphqlController.graphql());
-        //        router.post("/graphql")
-//                .handler(GraphQLPostHandler.create(graphQLSchema));
 
         //start server listening at portNumber
         int portnumber = Integer.valueOf(config().getString(SERVER_PORT, "8080"));

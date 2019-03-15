@@ -4,7 +4,7 @@ import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-@DataObject
+@DataObject(generateConverter=true)
 public class Model {
     private String _id;
     private String name;

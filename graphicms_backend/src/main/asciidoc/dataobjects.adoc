@@ -50,6 +50,19 @@
 |[[name]]`@name`|`String`|-
 |===
 
+[[ProjectInfo]]
+== ProjectInfo
+
+
+[cols=">25%,25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[auth]]`@auth`|`String`|-
+|[[description]]`@description`|`String`|-
+|[[name]]`@name`|`String`|-
+|===
+
 [[Student]]
 == Student
 

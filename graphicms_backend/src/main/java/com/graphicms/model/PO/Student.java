@@ -3,7 +3,7 @@ package com.graphicms.model.PO;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 
-@DataObject
+@DataObject(generateConverter=true)
 public class Student {
     private String Name;
 

@@ -1,7 +1,9 @@
 package com.graphicms.model.VO;
 
+import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 
+@DataObject(generateConverter = true)
 public class ProjectInfo {
     private String auth;
     private String _id;
@@ -16,21 +18,16 @@ public class ProjectInfo {
     }
 
     public ProjectInfo(JsonObject jsonObject) {
-        this.auth=jsonObject.getString("auth");
-        this._id=jsonObject.getString("_id");
-        this.name=jsonObject.getString("name");
-        this.description=jsonObject.getString("description");
+        ProjectInfoConverter.fromJson(jsonObject, this);
     }
 
     public ProjectInfo() {
     }
 
     public JsonObject toJson(ProjectInfo projectInfo) {
-        return new JsonObject()
-                .put("auth",projectInfo.getAuth())
-                .put("_id",projectInfo.get_id())
-                .put("name",projectInfo.getName())
-                .put("description",projectInfo.getDescription());
+        JsonObject json = new JsonObject();
+        ProjectInfoConverter.toJson(this, json);
+        return json;
     }
 
     public String getAuth() {
@@ -67,11 +64,7 @@ public class ProjectInfo {
 
     @Override
     public String toString() {
-        return "ProjectInfo{" +
-                "auth='" + auth + '\'' +
-                ", _id='" + _id + '\'' +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                '}';
+        return "ProjectInfo{" + "auth='" + auth + '\'' + ", _id='" + _id + '\'' + ", name='" + name + '\''
+                + ", description='" + description + '\'' + '}';
     }
 }
